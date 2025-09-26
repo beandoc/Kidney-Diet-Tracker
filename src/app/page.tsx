@@ -2,7 +2,6 @@
 'use client';
 
 import { useState, useMemo, memo } from 'react';
-import dynamic from 'next/dynamic';
 import type { Meal } from '@/lib/types';
 import useLocalStorage from '@/hooks/use-local-storage';
 import { Header } from '@/components/layout/header';
@@ -10,25 +9,10 @@ import { DailySummary } from '@/components/dashboard/daily-summary';
 import { MealList } from '@/components/meals/meal-list';
 import { AddMealDialog } from '@/components/meals/add-meal-dialog';
 import { getTodayDateString } from '@/lib/utils';
-import { Skeleton } from '@/components/ui/skeleton';
 
 const MemoizedHeader = memo(Header);
 const MemoizedDailySummary = memo(DailySummary);
 const MemoizedMealList = memo(MealList);
-
-
-const DynamicFoodSearch = dynamic(() => import('@/components/food/food-search').then(mod => mod.FoodSearch), {
-  loading: () => <Skeleton className="h-64" />,
-  ssr: false,
-});
-
-const DynamicFoodSuggestions = dynamic(() => import('@/components/food/food-suggestions').then(mod => mod.FoodSuggestions), {
-  loading: () => <Skeleton className="h-80" />,
-  ssr: false,
-});
-
-const MemoizedFoodSearch = memo(DynamicFoodSearch);
-const MemoizedFoodSuggestions = memo(DynamicFoodSuggestions);
 
 
 export default function Home() {
@@ -82,8 +66,8 @@ export default function Home() {
       <main className="flex-grow container mx-auto p-4 md:p-8">
         <MemoizedDailySummary totals={dailyTotals} />
 
-        <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
+        <div className="mt-8">
+          <div>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold font-headline text-foreground">
                 Today&apos;s Meals
@@ -91,10 +75,6 @@ export default function Home() {
               <AddMealDialog onAddMeal={addMeal} />
             </div>
             <MemoizedMealList meals={meals} onRemoveMeal={removeMeal} onUpdateMeal={updateMeal} />
-          </div>
-          <div className="lg:col-span-1 space-y-8">
-             <MemoizedFoodSearch />
-             <MemoizedFoodSuggestions />
           </div>
         </div>
       </main>

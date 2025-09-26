@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -106,14 +107,30 @@ const searchFoodDatabaseFlow = ai.defineFlow(
     if (!result) {
         console.log(`Initial search for "${foodQuery}" failed. Trying to resolve food name.`);
         try {
-            const foodNameParts = foodQuery.split(' ');
-            const quantityAndMeasure = foodNameParts.slice(0, 2).join(' ');
-            const foodName = foodNameParts.slice(2).join(' ');
+            // A more robust way to extract the food name from the query
+            const foodNameParts = foodQuery.trim().split(' ');
+            let quantityAndMeasure = '';
+            let foodName = '';
 
+            const potentialUnits = ['cup', 'cups', 'g', 'gram', 'grams', 'oz', 'ounce', 'ounces', 'piece', 'pieces', 'slice', 'slices', 'serving', 'servings', 'large', 'medium', 'small'];
+            
+            let nameStartIndex = 0;
+            // Find where the food name likely starts
+            if (!isNaN(parseFloat(foodNameParts[0]))) { // Starts with a number
+                 nameStartIndex = 1;
+                 if (potentialUnits.includes(foodNameParts[1]?.toLowerCase())) {
+                     nameStartIndex = 2;
+                 }
+            }
+            
+            quantityAndMeasure = foodNameParts.slice(0, nameStartIndex).join(' ');
+            foodName = foodNameParts.slice(nameStartIndex).join(' ');
+            
             if (foodName) {
+                console.log(`Extracted food name "${foodName}" for resolution.`);
                 const resolved = await resolveFoodName({ foodName: foodName });
                 if (resolved.standardName.toLowerCase() !== foodName.toLowerCase()) {
-                    const newQuery = `${quantityAndMeasure} ${resolved.standardName}`;
+                    const newQuery = `${quantityAndMeasure} ${resolved.standardName}`.trim();
                     console.log(`Retrying search with resolved name: "${newQuery}"`);
                     result = await searchNutritionix(newQuery);
                 }

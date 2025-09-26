@@ -1,4 +1,4 @@
-import { Leaf, Camera } from 'lucide-react';
+import { Leaf, Camera, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
@@ -12,12 +12,20 @@ export function Header() {
             Kidney Diet Tracker
             </h1>
         </div>
-        <Link href="/gallery" passHref>
-            <Button variant="outline">
-                <Camera className="mr-2 h-4 w-4" />
-                Snap Gallery
-            </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+            <Link href="/gallery" passHref>
+                <Button variant="outline">
+                    <Camera className="mr-2 h-4 w-4" />
+                    Snap Gallery
+                </Button>
+            </Link>
+             <Link href="/edit-meals" passHref>
+                <Button variant="outline" size="icon">
+                    <Settings className="h-4 w-4" />
+                    <span className="sr-only">Edit Meals</span>
+                </Button>
+            </Link>
+        </div>
       </div>
     </header>
   );

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -31,9 +30,16 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
       }
 
       try {
-        const newValue = value instanceof Function ? value(storedValue) : value;
-        window.localStorage.setItem(key, JSON.stringify(newValue));
-        setStoredValue(newValue);
+        // The `value` parameter can be a value or a function.
+        // When it's a function, we pass it the *current* storedValue.
+        const valueToStore =
+          value instanceof Function ? value(storedValue) : value;
+        
+        window.localStorage.setItem(key, JSON.stringify(valueToStore));
+        
+        setStoredValue(valueToStore);
+
+        // This is a custom event to notify other tabs/windows of the change.
         window.dispatchEvent(new Event('local-storage'));
       } catch (error) {
         console.warn(`Error setting localStorage key “${key}”:`, error);
@@ -51,7 +57,9 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
       setStoredValue(readValue());
     };
     
+    // Listen for changes from other tabs
     window.addEventListener("storage", handleStorageChange);
+    // Listen for changes from the same tab (our custom event)
     window.addEventListener("local-storage", handleStorageChange);
 
     return () => {

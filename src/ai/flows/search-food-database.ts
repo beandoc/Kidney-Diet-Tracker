@@ -33,7 +33,6 @@ export async function searchFoodDatabase(input: SearchFoodDatabaseInput): Promis
   return searchFoodDatabaseFlow(input);
 }
 
-
 const searchFoodDatabaseFlow = ai.defineFlow(
   {
     name: 'searchFoodDatabaseFlow',
@@ -49,7 +48,7 @@ const searchFoodDatabaseFlow = ai.defineFlow(
         throw new Error("Nutritionix API credentials are not configured in environment variables.");
     }
 
-    const searchNutritionix = async (query: string) => {
+    const searchNutritionix = async (query: string): Promise<SearchFoodDatabaseOutput | null> => {
         try {
             const response = await fetch(NUTRITIONIX_API_URL, {
                 method: 'POST',
@@ -73,6 +72,7 @@ const searchFoodDatabaseFlow = ai.defineFlow(
             const data = await response.json();
             
             if (!data.foods || data.foods.length === 0) {
+                console.log(`No food found for query: "${query}"`);
                 return null;
             }
 
@@ -96,7 +96,8 @@ const searchFoodDatabaseFlow = ai.defineFlow(
 
         } catch (error) {
             console.error('Error fetching data from Nutritionix API:', error);
-            throw new Error('Failed to fetch nutrient data.');
+            // We throw here because it's a network/unexpected error, not a "not found" case.
+            throw new Error('Failed to fetch nutrient data from Nutritionix.');
         }
     }
     
@@ -115,9 +116,10 @@ const searchFoodDatabaseFlow = ai.defineFlow(
             const potentialUnits = ['cup', 'cups', 'g', 'gram', 'grams', 'oz', 'ounce', 'ounces', 'piece', 'pieces', 'slice', 'slices', 'serving', 'servings', 'large', 'medium', 'small'];
             
             let nameStartIndex = 0;
-            // Find where the food name likely starts
+            // Find where the food name likely starts. This logic is imperfect but better.
             if (!isNaN(parseFloat(foodNameParts[0]))) { // Starts with a number
                  nameStartIndex = 1;
+                 // Check if the next word is a common unit
                  if (potentialUnits.includes(foodNameParts[1]?.toLowerCase())) {
                      nameStartIndex = 2;
                  }
@@ -129,7 +131,9 @@ const searchFoodDatabaseFlow = ai.defineFlow(
             if (foodName) {
                 console.log(`Extracted food name "${foodName}" for resolution.`);
                 const resolved = await resolveFoodName({ foodName: foodName });
-                if (resolved.standardName.toLowerCase() !== foodName.toLowerCase()) {
+
+                // Only retry if the name was actually changed by the resolver
+                if (resolved.standardName && resolved.standardName.toLowerCase() !== foodName.toLowerCase()) {
                     const newQuery = `${quantityAndMeasure} ${resolved.standardName}`.trim();
                     console.log(`Retrying search with resolved name: "${newQuery}"`);
                     result = await searchNutritionix(newQuery);
@@ -137,10 +141,11 @@ const searchFoodDatabaseFlow = ai.defineFlow(
             }
         } catch (resolveError) {
             console.error("Failed to resolve food name with AI", resolveError);
+            // Don't throw, just proceed to the final check
         }
     }
     
-    // If still no result, return zeroed-out nutrients
+    // If still no result after all attempts, return zeroed-out nutrients
     if (!result) {
         return {
             calories: 0,

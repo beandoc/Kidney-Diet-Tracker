@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -10,6 +11,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getFoodNutrients } from '@/app/actions';
 import type { FoodItem, Meal, Nutrient } from '@/lib/types';
+import type { MealSetting } from '@/app/edit-meals/page';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import useLocalStorage from '@/hooks/use-local-storage';
@@ -111,7 +113,7 @@ function FiberIcon(props: React.SVGProps<SVGSVGElement>) {
     )
 }
 
-const mealSettings = [
+const defaultMealSettings: MealSetting[] = [
     { name: 'Breakfast', time: '09:30 AM', enabled: true },
     { name: 'Morning Snack', time: '11:00 AM', enabled: true },
     { name: 'Lunch', time: '01:30 PM', enabled: true },
@@ -134,6 +136,11 @@ export default function FoodDetailPage({ params }: { params: { foodName: string 
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState('');
+
+  const [mealSettings] = useLocalStorage<MealSetting[]>('mealSettings', defaultMealSettings);
+  const [otherMeals] = useLocalStorage<string[]>('otherMeals', []);
+  const availableMeals = [...mealSettings.filter(m => m.enabled).map(m => m.name), ...otherMeals];
+
 
   const { toast } = useToast();
   const [meals, setMeals] = useLocalStorage<Meal[]>(`meals-${getTodayDateString()}`, []);
@@ -358,8 +365,8 @@ export default function FoodDetailPage({ params }: { params: { foodName: string 
                         <SelectValue placeholder="Select a meal..." />
                     </SelectTrigger>
                     <SelectContent>
-                        {mealSettings.filter(m => m.enabled).map(meal => (
-                            <SelectItem key={meal.name} value={meal.name}>{meal.name}</SelectItem>
+                        {availableMeals.map(mealName => (
+                            <SelectItem key={mealName} value={mealName}>{mealName}</SelectItem>
                         ))}
                     </SelectContent>
                 </Select>

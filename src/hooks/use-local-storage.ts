@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -19,7 +20,7 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
     }
   }, [initialValue, key]);
 
-  const [storedValue, setStoredValue] = useState<T>(initialValue);
+  const [storedValue, setStoredValue] = useState<T>(readValue);
 
   const setValue: SetValue<T> = useCallback(
     value => {
@@ -42,8 +43,7 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
         console.warn(`Error setting localStorage key “${key}”:`, error);
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [key]
+    [key, storedValue]
   );
   
   useEffect(() => {

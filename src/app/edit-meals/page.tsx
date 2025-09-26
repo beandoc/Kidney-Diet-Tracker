@@ -1,8 +1,9 @@
+
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import useLocalStorage from '@/hooks/use-local-storage';
-import { ArrowLeft, RefreshCw, Trash2 } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Trash2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -10,7 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { DishedOut } from '@/components/icons/dished-out';
 import Link from 'next/link';
 
-type MealSetting = {
+export type MealSetting = {
   name: string;
   time: string;
   enabled: boolean;
@@ -30,7 +31,8 @@ export default function EditMealsPage() {
     defaultMealSettings
   );
   
-  const [otherMeals, setOtherMeals] = useState(['']);
+  const [otherMeals, setOtherMeals] = useLocalStorage<string[]>('otherMeals', []);
+  const [newMealName, setNewMealName] = useState('');
 
   const handleSettingChange = (index: number, field: keyof MealSetting, value: string | boolean) => {
     const newSettings = [...mealSettings];
@@ -45,7 +47,10 @@ export default function EditMealsPage() {
   };
   
   const addOtherMeal = () => {
-    setOtherMeals([...otherMeals, '']);
+    if (newMealName.trim() !== '') {
+        setOtherMeals([...otherMeals, newMealName.trim()]);
+        setNewMealName('');
+    }
   }
   
   const removeOtherMeal = (index: number) => {
@@ -54,12 +59,13 @@ export default function EditMealsPage() {
 
   const resetSettings = () => {
     setMealSettings(defaultMealSettings);
+    setOtherMeals([]);
   };
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <Link href="/" passHref>
+        <Link href="/settings" passHref>
           <Button variant="ghost" size="icon">
             <ArrowLeft />
             <span className="sr-only">Back</span>
@@ -115,7 +121,7 @@ export default function EditMealsPage() {
                             value={meal} 
                             onChange={(e) => handleOtherMealChange(index, e.target.value)}
                             placeholder="e.g. Pre-workout snack"
-                            className="border-none focus-visible:ring-0"
+                            className="border-none focus-visible:ring-0 font-medium"
                         />
                         <Button variant="ghost" size="icon" onClick={() => removeOtherMeal(index)}>
                             <Trash2 className="h-4 w-4 text-destructive" />
@@ -123,10 +129,22 @@ export default function EditMealsPage() {
                    </CardContent>
                 </Card>
              ))}
+              <Card>
+                <CardContent className="p-3 flex items-center gap-2">
+                    <Input 
+                        value={newMealName} 
+                        onChange={(e) => setNewMealName(e.target.value)}
+                        placeholder="Add another meal..."
+                        className="border-none focus-visible:ring-0"
+                         onKeyDown={(e) => e.key === 'Enter' && addOtherMeal()}
+                    />
+                    <Button variant="ghost" size="icon" onClick={addOtherMeal}>
+                        <Plus className="h-5 w-5 text-primary" />
+                    </Button>
+                </CardContent>
+              </Card>
            </div>
            
-           <Button variant="link" onClick={addOtherMeal} className="mt-2">Add another meal</Button>
-
           <div className="mt-12 flex justify-center">
             <DishedOut className="w-40 h-40 text-muted" />
           </div>

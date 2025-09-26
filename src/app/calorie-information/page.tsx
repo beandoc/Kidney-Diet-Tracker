@@ -1,7 +1,9 @@
 
 'use client';
 
-import { ArrowLeft, Lock, Info, ChevronDown, Wheat, Beef } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import useLocalStorage from '@/hooks/use-local-storage';
+import { ArrowLeft, Lock, Info, Wheat, Beef, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -11,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 
 function BreadIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -50,12 +53,46 @@ function FatIcon(props: React.SVGProps<SVGSVGElement>) {
     );
 }
 
+const dietPlans = {
+    balanced: { protein: 20, carbs: 50, fat: 30 },
+    'low-carb': { protein: 30, carbs: 20, fat: 50 },
+    'high-protein': { protein: 40, carbs: 30, fat: 30 },
+};
 
 export default function CalorieInformationPage() {
+  const [calorieBudget, setCalorieBudget] = useLocalStorage('calorieBudget', 2300);
+  const [dietPlan, setDietPlan] = useLocalStorage<'balanced' | 'low-carb' | 'high-protein'>('dietPlan', 'balanced');
+  const [isEditingBudget, setIsEditingBudget] = useState(false);
+  const [tempBudget, setTempBudget] = useState(calorieBudget);
+
+  const macronutrients = useMemo(() => {
+    const plan = dietPlans[dietPlan];
+    return {
+        protein: Math.round((calorieBudget * (plan.protein / 100)) / 4),
+        carbs: Math.round((calorieBudget * (plan.carbs / 100)) / 4),
+        fat: Math.round((calorieBudget * (plan.fat / 100)) / 9),
+    };
+  }, [calorieBudget, dietPlan]);
+
+  const handleBudgetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setTempBudget(isNaN(value) ? 0 : value);
+  };
+
+  const saveBudget = () => {
+    setCalorieBudget(tempBudget);
+    setIsEditingBudget(false);
+  };
+  
+  useEffect(() => {
+    setTempBudget(calorieBudget);
+  }, [calorieBudget]);
+
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-10 flex items-center justify-start p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <Link href="/" passHref>
+        <Link href="/settings" passHref>
           <Button variant="ghost" size="icon">
             <ArrowLeft />
             <span className="sr-only">Back</span>
@@ -73,8 +110,14 @@ export default function CalorieInformationPage() {
               <div className="flex items-center justify-between">
                 <span className="text-lg">Calorie Budget</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl font-bold">2,300</span>
-                  <Lock className="h-5 w-5 text-muted-foreground" />
+                    {isEditingBudget ? (
+                        <Input type="number" value={tempBudget} onChange={handleBudgetChange} className="w-28 text-right" onBlur={saveBudget} autoFocus/>
+                    ) : (
+                        <span className="text-2xl font-bold">{calorieBudget}</span>
+                    )}
+                    <Button variant="ghost" size="icon" onClick={() => setIsEditingBudget(!isEditingBudget)}>
+                        <Pencil className="h-4 w-4 text-muted-foreground" />
+                    </Button>
                 </div>
               </div>
               <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
@@ -89,7 +132,7 @@ export default function CalorieInformationPage() {
               <CardTitle>Macronutrient Budget</CardTitle>
             </CardHeader>
             <CardContent>
-              <Select defaultValue="balanced">
+              <Select value={dietPlan} onValueChange={(value: 'balanced' | 'low-carb' | 'high-protein') => setDietPlan(value)}>
                 <SelectTrigger className="w-full mb-6">
                   <SelectValue placeholder="Select a diet" />
                 </SelectTrigger>
@@ -106,11 +149,11 @@ export default function CalorieInformationPage() {
                     <Beef className="h-6 w-6 text-muted-foreground" />
                     <div>
                       <p className="font-medium">Protein</p>
-                      <p className="text-sm text-muted-foreground">115 g</p>
+                      <p className="text-sm text-muted-foreground">{macronutrients.protein} g</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 p-2 px-4 border rounded-md">
-                    <span>20%</span>
+                    <span>{dietPlans[dietPlan].protein}%</span>
                     <Lock className="h-4 w-4 text-muted-foreground" />
                   </div>
                 </div>
@@ -120,11 +163,11 @@ export default function CalorieInformationPage() {
                     <BreadIcon className="h-6 w-6 text-muted-foreground" />
                     <div>
                       <p className="font-medium">Carb</p>
-                      <p className="text-sm text-muted-foreground">287 g</p>
+                      <p className="text-sm text-muted-foreground">{macronutrients.carbs} g</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 p-2 px-4 border rounded-md">
-                    <span>50%</span>
+                    <span>{dietPlans[dietPlan].carbs}%</span>
                     <Lock className="h-4 w-4 text-muted-foreground" />
                   </div>
                 </div>
@@ -134,11 +177,11 @@ export default function CalorieInformationPage() {
                     <FatIcon className="h-6 w-6 text-muted-foreground" />
                     <div>
                       <p className="font-medium">Fat</p>
-                      <p className="text-sm text-muted-foreground">76 g</p>
+                      <p className="text-sm text-muted-foreground">{macronutrients.fat} g</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 p-2 px-4 border rounded-md">
-                    <span>30%</span>
+                    <span>{dietPlans[dietPlan].fat}%</span>
                     <Lock className="h-4 w-4 text-muted-foreground" />
                   </div>
                 </div>

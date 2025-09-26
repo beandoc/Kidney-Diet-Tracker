@@ -1,15 +1,25 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { DAILY_GOALS, NUTRIENT_ICONS, NUTRIENT_LABELS, NUTRIENT_UNITS } from '@/lib/constants';
+import { DAILY_GOALS as DEFAULT_GOALS, NUTRIENT_ICONS, NUTRIENT_LABELS, NUTRIENT_UNITS } from '@/lib/constants';
 import type { Nutrient } from '@/lib/types';
+import useLocalStorage from '@/hooks/use-local-storage';
 
 interface DailySummaryProps {
   totals: Record<Nutrient, number>;
 }
 
 export function DailySummary({ totals }: DailySummaryProps) {
+  const [calorieBudget] = useLocalStorage('calorieBudget', DEFAULT_GOALS.calories);
+  // We only need to dynamically adjust the macronutrients based on calorie budget.
+  // The daily goals for sodium, potassium, phosphorus remain constant as per the app's design.
+  const dynamicGoals = {
+      ...DEFAULT_GOALS,
+      calories: calorieBudget,
+  }
+
   return (
     <Card className="shadow-md">
       <CardHeader>
@@ -20,7 +30,7 @@ export function DailySummary({ totals }: DailySummaryProps) {
           {(Object.keys(totals) as Nutrient[]).map((nutrient) => {
             const Icon = NUTRIENT_ICONS[nutrient];
             const value = Math.round(totals[nutrient]);
-            const goal = DAILY_GOALS[nutrient];
+            const goal = dynamicGoals[nutrient];
             const progress = goal > 0 ? (value / goal) * 100 : 0;
 
             return (

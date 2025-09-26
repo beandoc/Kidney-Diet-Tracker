@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -5,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Plus, Search, Loader2, X, Utensils } from 'lucide-react';
+import useLocalStorage from '@/hooks/use-local-storage';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -24,30 +26,37 @@ import { getFoodNutrients } from '@/app/actions';
 import type { FoodItem, Meal } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { FREQUENTLY_TRACKED_FOODS } from '@/lib/food-database';
+import { MealSetting } from '@/app/edit-meals/page';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+
 
 interface AddMealDialogProps {
   onAddMeal: (meal: Meal) => void;
 }
-
-const mealFormSchema = z.object({
-  mealName: z.string().min(1, 'Meal name is required.'),
-});
 
 const foodSearchSchema = z.object({
   foodName: z.string().min(1, 'Food name is required.'),
   quantity: z.string().min(1, 'Quantity is required.'),
 });
 
+const defaultMealSettings: MealSetting[] = [
+    { name: 'Breakfast', time: '09:30 AM', enabled: true },
+    { name: 'Morning Snack', time: '11:00 AM', enabled: true },
+    { name: 'Lunch', time: '01:30 PM', enabled: true },
+    { name: 'Evening Snack', time: '05:00 PM', enabled: true },
+    { name: 'Dinner', time: '08:00 PM', enabled: true },
+];
+
 export function AddMealDialog({ onAddMeal }: AddMealDialogProps) {
   const [open, setOpen] = useState(false);
   const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [selectedMealName, setSelectedMealName] = useState('');
   const { toast } = useToast();
 
-  const form = useForm<z.infer<typeof mealFormSchema>>({
-    resolver: zodResolver(mealFormSchema),
-    defaultValues: { mealName: '' },
-  });
+  const [mealSettings] = useLocalStorage<MealSetting[]>('mealSettings', defaultMealSettings);
+  const [otherMeals] = useLocalStorage<string[]>('otherMeals', []);
+  const availableMeals = [...mealSettings.filter(m => m.enabled).map(m => m.name), ...otherMeals];
 
   const foodForm = useForm<z.infer<typeof foodSearchSchema>>({
     resolver: zodResolver(foodSearchSchema),
@@ -89,7 +98,15 @@ export function AddMealDialog({ onAddMeal }: AddMealDialogProps) {
     setFoodItems(foodItems.filter((item) => item.id !== id));
   };
 
-  const onSubmit = (values: z.infer<typeof mealFormSchema>) => {
+  const onSubmit = () => {
+    if (!selectedMealName) {
+      toast({
+        variant: 'destructive',
+        title: 'Meal name required',
+        description: 'Please select a meal name.',
+      });
+      return;
+    }
     if (foodItems.length === 0) {
       toast({
         variant: 'destructive',
@@ -100,12 +117,12 @@ export function AddMealDialog({ onAddMeal }: AddMealDialogProps) {
     }
     const newMeal: Meal = {
       id: crypto.randomUUID(),
-      name: values.mealName,
+      name: selectedMealName,
       items: foodItems,
     };
     onAddMeal(newMeal);
     setOpen(false);
-    form.reset();
+    setSelectedMealName('');
     setFoodItems([]);
   };
 
@@ -133,23 +150,19 @@ export function AddMealDialog({ onAddMeal }: AddMealDialogProps) {
         
         <ScrollArea className="h-full overflow-y-auto">
             <div className="space-y-4 px-6 py-4">
-                <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <FormField
-                    control={form.control}
-                    name="mealName"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Meal Name</FormLabel>
-                        <FormControl>
-                            <Input placeholder="e.g., Breakfast, Lunch..." {...field} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                </form>
-                </Form>
+                <div className="space-y-2">
+                    <FormLabel>Meal Name</FormLabel>
+                     <Select onValueChange={setSelectedMealName} value={selectedMealName}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select a meal..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {availableMeals.map(mealName => (
+                                <SelectItem key={mealName} value={mealName}>{mealName}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
                 
                 <div className="space-y-4">
                     <h3 className="text-sm font-medium">Add Food Items</h3>
@@ -221,7 +234,7 @@ export function AddMealDialog({ onAddMeal }: AddMealDialogProps) {
         </ScrollArea>
 
         <DialogFooter className="p-6 pt-0">
-          <Button type="button" onClick={form.handleSubmit(onSubmit)}>
+          <Button type="button" onClick={onSubmit}>
             <Utensils className="mr-2 h-4 w-4" />
             Save Meal
           </Button>

@@ -13,11 +13,10 @@ interface DailySummaryProps {
 
 export function DailySummary({ totals }: DailySummaryProps) {
   const [calorieBudget] = useLocalStorage('calorieBudget', DEFAULT_GOALS.calories);
-  // We only need to dynamically adjust the macronutrients based on calorie budget.
-  // The daily goals for sodium, potassium, phosphorus remain constant as per the app's design.
+  
   const dynamicGoals = {
       ...DEFAULT_GOALS,
-      calories: calorieBudget,
+      calories: calorieBudget || DEFAULT_GOALS.calories,
   }
 
   return (

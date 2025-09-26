@@ -10,6 +10,7 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Responsive
 import { subDays, format, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
 import { formatDate } from '@/lib/utils';
 import type { Meal } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 type DailyData = {
     date: string;
@@ -118,14 +119,47 @@ export default function ProgressPage() {
     }, []);
 
     const weeklyData = useMemo(() => {
-        if (!isClient) return [];
+        if (!isClient) return Array(7).fill({}).map((_, i) => ({date: format(subDays(new Date(), 6-i), 'EEE'), calories: 0, protein: 0}));
         return getWeekDataForDate(new Date());
     }, [isClient]);
 
     const monthlyData = useMemo(() => {
-        if (!isClient) return [];
+        if (!isClient) return Array(4).fill({}).map((_,i) => ({week: `Week ${i+1}`, calories: 0, protein: 0}));
         return getMonthData();
     }, [isClient]);
+    
+    if (!isClient) {
+        return (
+             <div className="flex flex-col min-h-screen bg-background text-foreground">
+              <header className="sticky top-0 z-10 flex items-center justify-start p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                <Skeleton className="h-10 w-10" />
+                <Skeleton className="h-6 w-32 ml-4" />
+              </header>
+              <main className="flex-grow p-4 md:p-6">
+                <div className="max-w-4xl mx-auto space-y-8">
+                  <Card>
+                    <CardHeader>
+                      <Skeleton className="h-6 w-48" />
+                      <Skeleton className="h-4 w-64 mt-2" />
+                    </CardHeader>
+                    <CardContent>
+                      <Skeleton className="h-[300px] w-full" />
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader>
+                      <Skeleton className="h-6 w-48" />
+                      <Skeleton className="h-4 w-64 mt-2" />
+                    </CardHeader>
+                    <CardContent>
+                      <Skeleton className="h-[300px] w-full" />
+                    </CardContent>
+                  </Card>
+                </div>
+              </main>
+            </div>
+        );
+    }
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo, memo } from 'react';
@@ -9,10 +10,12 @@ import { MealList } from '@/components/meals/meal-list';
 import { AddMealDialog } from '@/components/meals/add-meal-dialog';
 import { FoodSearch } from '@/components/food/food-search';
 import { getTodayDateString } from '@/lib/utils';
+import { FoodSuggestions } from '@/components/food/food-suggestions';
 
 const MemoizedHeader = memo(Header);
 const MemoizedDailySummary = memo(DailySummary);
 const MemoizedFoodSearch = memo(FoodSearch);
+const MemoizedFoodSuggestions = memo(FoodSuggestions);
 
 export default function Home() {
   const [meals, setMeals] = useLocalStorage<Meal[]>(`meals-${getTodayDateString()}`, []);
@@ -81,8 +84,9 @@ export default function Home() {
             </div>
             <MealList meals={meals} onRemoveMeal={removeMeal} onUpdateMeal={updateMeal} />
           </div>
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 space-y-8">
              <MemoizedFoodSearch />
+             <MemoizedFoodSuggestions />
           </div>
         </div>
       </main>

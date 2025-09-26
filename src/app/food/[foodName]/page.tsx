@@ -1,13 +1,21 @@
 
 'use client';
 
-import { ArrowLeft, ExternalLink, AlertTriangle, ChevronDown, Info, Minus, Plus } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ArrowLeft, ExternalLink, AlertTriangle, Info, Plus, Utensils } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Image from 'next/image';
 import Link from 'next/link';
-import { DishedOut } from '@/components/icons/dished-out';
+import { getFoodNutrients } from '@/app/actions';
+import type { FoodItem, Meal, Nutrient } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
+import useLocalStorage from '@/hooks/use-local-storage';
+import { getTodayDateString } from '@/lib/utils';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+
 
 function RecipeIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -103,6 +111,15 @@ function FiberIcon(props: React.SVGProps<SVGSVGElement>) {
     )
 }
 
+const mealSettings = [
+    { name: 'Breakfast', time: '09:30 AM', enabled: true },
+    { name: 'Morning Snack', time: '11:00 AM', enabled: true },
+    { name: 'Lunch', time: '01:30 PM', enabled: true },
+    { name: 'Evening Snack', time: '05:00 PM', enabled: true },
+    { name: 'Dinner', time: '08:00 PM', enabled: true },
+  ];
+  
+
 function capitalizeFirstLetter(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
@@ -110,6 +127,81 @@ function capitalizeFirstLetter(string: string) {
 export default function FoodDetailPage({ params }: { params: { foodName: string } }) {
   const foodName = decodeURIComponent(params.foodName);
   const displayFoodName = capitalizeFirstLetter(foodName);
+
+  const [quantity, setQuantity] = useState('1');
+  const [measure, setMeasure] = useState('large');
+  const [nutrients, setNutrients] = useState<Record<Nutrient, number> | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedMeal, setSelectedMeal] = useState('');
+
+  const { toast } = useToast();
+  const [meals, setMeals] = useLocalStorage<Meal[]>(`meals-${getTodayDateString()}`, []);
+  
+
+  useEffect(() => {
+    const fetchNutrients = async () => {
+      setIsLoading(true);
+      try {
+        const result = await getFoodNutrients(foodName, `${quantity} ${measure}`);
+        setNutrients(result);
+      } catch (error) {
+        console.error("Failed to fetch nutrients", error);
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: `Could not fetch nutrient data for ${displayFoodName}.`,
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchNutrients();
+  }, [foodName, quantity, measure, displayFoodName, toast]);
+
+  const handleAddToMeal = () => {
+    if (!selectedMeal) {
+        toast({ variant: 'destructive', title: 'Please select a meal.'});
+        return;
+    }
+    if (!nutrients) {
+        toast({ variant: 'destructive', title: 'Nutrient data not available.'});
+        return;
+    }
+
+    const foodItem: FoodItem = {
+        id: crypto.randomUUID(),
+        name: displayFoodName,
+        quantity: `${quantity} ${measure}`,
+        nutrients,
+    };
+
+    const existingMealIndex = meals.findIndex(m => m.name === selectedMeal);
+    
+    if (existingMealIndex > -1) {
+        const updatedMeals = [...meals];
+        updatedMeals[existingMealIndex].items.push(foodItem);
+        setMeals(updatedMeals);
+    } else {
+        const newMeal: Meal = {
+            id: crypto.randomUUID(),
+            name: selectedMeal,
+            items: [foodItem],
+        };
+        setMeals([...meals, newMeal]);
+    }
+
+    toast({ title: 'Item Added', description: `${displayFoodName} added to ${selectedMeal}.`});
+    setIsDialogOpen(false);
+    setSelectedMeal('');
+  }
+
+  const renderNutrientValue = (nutrient: Nutrient) => {
+    if (isLoading || !nutrients) {
+        return <Skeleton className="h-5 w-16" />;
+    }
+    return <span className="font-medium">{Math.round(nutrients[nutrient])} g</span>;
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
@@ -160,14 +252,14 @@ export default function FoodDetailPage({ params }: { params: { foodName: string 
             <div>
               <label className="text-sm font-medium text-muted-foreground">Quantity</label>
               <div className="flex items-center mt-1">
-                <Select defaultValue="2">
+                <Select value={quantity} onValueChange={setQuantity}>
                   <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">1</SelectItem>
-                    <SelectItem value="2">2</SelectItem>
-                    <SelectItem value="3">3</SelectItem>
+                    {[...Array(10)].map((_, i) => (
+                         <SelectItem key={i+1} value={String(i+1)}>{i+1}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -175,7 +267,7 @@ export default function FoodDetailPage({ params }: { params: { foodName: string 
              <div>
               <label className="text-sm font-medium text-muted-foreground flex items-center">Measure <Info className="h-3 w-3 ml-1 text-muted-foreground"/></label>
               <div className="flex items-center mt-1">
-                <Select defaultValue="large">
+                <Select value={measure} onValueChange={setMeasure}>
                   <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
@@ -183,6 +275,11 @@ export default function FoodDetailPage({ params }: { params: { foodName: string 
                     <SelectItem value="small">Small</SelectItem>
                     <SelectItem value="medium">Medium</SelectItem>
                     <SelectItem value="large">Large</SelectItem>
+                    <SelectItem value="g">gram</SelectItem>
+                    <SelectItem value="oz">ounce</SelectItem>
+                    <SelectItem value="piece">piece</SelectItem>
+                    <SelectItem value="slice">slice</SelectItem>
+                    <SelectItem value="cup">cup</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -196,10 +293,7 @@ export default function FoodDetailPage({ params }: { params: { foodName: string 
                 <div className="flex justify-between items-center mb-4">
                     <div>
                         <p className="text-sm text-muted-foreground">Calories</p>
-                        <p className="text-3xl font-bold">155 Cal</p>
-                    </div>
-                    <div className="bg-muted px-3 py-1 rounded-md text-sm">
-                        Net wt: 100.0 g
+                        {isLoading || !nutrients ? <Skeleton className="h-8 w-24 mt-1" /> : <p className="text-3xl font-bold">{Math.round(nutrients.calories)} Cal</p> }
                     </div>
                 </div>
                 <div className="space-y-3">
@@ -208,28 +302,28 @@ export default function FoodDetailPage({ params }: { params: { foodName: string 
                             <ProteinsIcon className="h-5 w-5 text-muted-foreground"/>
                             <span>Proteins</span>
                         </div>
-                        <span className="font-medium">12.6 g</span>
+                        {renderNutrientValue('protein')}
                     </div>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <FatsIcon className="h-5 w-5 text-muted-foreground"/>
                             <span>Fats</span>
                         </div>
-                        <span className="font-medium">10.6 g</span>
+                         {isLoading || !nutrients ? <Skeleton className="h-5 w-16" /> : <span className="font-medium">{Math.round(nutrients.phosphorus)} g</span>}
                     </div>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <CarbsIcon className="h-5 w-5 text-muted-foreground"/>
                             <span>Carbs</span>
                         </div>
-                        <span className="font-medium">1.1 g</span>
+                        {isLoading || !nutrients ? <Skeleton className="h-5 w-16" /> : <span className="font-medium">{Math.round(nutrients.potassium)} g</span>}
                     </div>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <FiberIcon className="h-5 w-5 text-muted-foreground"/>
                             <span>Fiber</span>
                         </div>
-                        <span className="font-medium">0.0 g</span>
+                        <span className="font-medium">N/A</span>
                     </div>
                 </div>
             </CardContent>
@@ -246,9 +340,40 @@ export default function FoodDetailPage({ params }: { params: { foodName: string 
       </main>
       <footer className="sticky bottom-0 p-4 bg-background border-t">
         <div className="max-w-md mx-auto">
-            <Button size="lg" className="w-full">Add to Breakfast</Button>
+            <Button size="lg" className="w-full" onClick={() => setIsDialogOpen(true)} disabled={isLoading || !nutrients}>
+                <Plus className="mr-2" /> Add to Meal
+            </Button>
         </div>
       </footer>
+
+       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Add to Meal</DialogTitle>
+                <DialogDescription>Select which meal to add {displayFoodName} to.</DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+                <Select onValueChange={setSelectedMeal} value={selectedMeal}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Select a meal..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {mealSettings.filter(m => m.enabled).map(meal => (
+                            <SelectItem key={meal.name} value={meal.name}>{meal.name}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+            <DialogFooter>
+                <Button onClick={handleAddToMeal}>
+                    <Utensils className="mr-2 h-4 w-4" />
+                    Add Item
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
+    

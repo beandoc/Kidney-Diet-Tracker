@@ -108,25 +108,27 @@ const searchFoodDatabaseFlow = ai.defineFlow(
     if (!result) {
         console.log(`Initial search for "${foodQuery}" failed. Trying to resolve food name.`);
         try {
-            // A more robust way to extract the food name from the query
-            const foodNameParts = foodQuery.trim().split(' ');
+            // Regex to separate quantity/measure from the food name.
+            // Handles cases like "1 cup", "1.5", "large", "100g", etc.
+            const regex = /^\s*(\d*\.?\d*\s*)?([\w\s/-]+)?\s*([\w\s]+)\s*$/;
+            const match = foodQuery.trim().match(regex);
+            
             let quantityAndMeasure = '';
             let foodName = '';
 
-            const potentialUnits = ['cup', 'cups', 'g', 'gram', 'grams', 'oz', 'ounce', 'ounces', 'piece', 'pieces', 'slice', 'slices', 'serving', 'servings', 'large', 'medium', 'small'];
-            
-            let nameStartIndex = 0;
-            // Find where the food name likely starts. This logic is imperfect but better.
-            if (!isNaN(parseFloat(foodNameParts[0]))) { // Starts with a number
-                 nameStartIndex = 1;
-                 // Check if the next word is a common unit
-                 if (potentialUnits.includes(foodNameParts[1]?.toLowerCase())) {
-                     nameStartIndex = 2;
-                 }
+            if (match) {
+                 // Reconstruct quantity and measure from capturing groups. This logic is much more robust.
+                const quantity = match[1] ? match[1].trim() : '';
+                const measure = match[2] ? match[2].trim() : '';
+                foodName = match[3] ? match[3].trim() : '';
+                
+                // If regex fails to parse, fall back to using the whole query.
+                if (!foodName) foodName = foodQuery;
+                
+                quantityAndMeasure = `${quantity} ${measure}`.trim();
+            } else {
+                foodName = foodQuery;
             }
-            
-            quantityAndMeasure = foodNameParts.slice(0, nameStartIndex).join(' ');
-            foodName = foodNameParts.slice(nameStartIndex).join(' ');
             
             if (foodName) {
                 console.log(`Extracted food name "${foodName}" for resolution.`);

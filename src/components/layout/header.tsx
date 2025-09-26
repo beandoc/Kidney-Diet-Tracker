@@ -19,10 +19,10 @@ export function Header() {
                     Snap Gallery
                 </Button>
             </Link>
-             <Link href="/edit-meals" passHref>
+             <Link href="/settings" passHref>
                 <Button variant="outline" size="icon">
                     <Settings className="h-4 w-4" />
-                    <span className="sr-only">Edit Meals</span>
+                    <span className="sr-only">Settings</span>
                 </Button>
             </Link>
         </div>

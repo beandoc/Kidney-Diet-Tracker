@@ -47,18 +47,6 @@ const searchFoodDatabaseFlow = ai.defineFlow(
         throw new Error("Nutritionix API credentials are not configured in environment variables.");
     }
     
-    if (NUTRITIONIX_APP_ID === "YOUR_NUTRITIONIX_APP_ID" || NUTRITIONIX_APP_KEY === "YOUR_NUTRITIONIX_APP_KEY") {
-      console.warn("Using placeholder Nutritionix API credentials. Please update .env.local with your actual keys.");
-      // Return empty/zeroed data if using placeholder keys to avoid API errors
-      return {
-        calories: 0,
-        protein: 0,
-        sodium: 0,
-        potassium: 0,
-        phosphorus: 0,
-      };
-    }
-
     try {
         const response = await fetch(NUTRITIONIX_API_URL, {
             method: 'POST',

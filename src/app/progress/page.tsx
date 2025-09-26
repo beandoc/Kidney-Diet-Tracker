@@ -1,17 +1,15 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { subDays, format, startOfWeek, endOfWeek, eachDayOfInterval, addWeeks } from 'date-fns';
-import useLocalStorage from '@/hooks/use-local-storage';
+import { subDays, format, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
 import { formatDate } from '@/lib/utils';
 import type { Meal } from '@/lib/types';
-
 
 type DailyData = {
     date: string;
@@ -25,7 +23,7 @@ type WeeklyData = {
     protein: number;
 }
 
-function getWeekData(date: Date): DailyData[] {
+function getWeekDataForDate(date: Date): DailyData[] {
     const start = startOfWeek(date, { weekStartsOn: 1 });
     const end = endOfWeek(date, { weekStartsOn: 1 });
     const weekDays = eachDayOfInterval({ start, end });
@@ -34,9 +32,11 @@ function getWeekData(date: Date): DailyData[] {
         const dateString = formatDate(day);
         let meals: Meal[] = [];
         try {
-            const storedMeals = localStorage.getItem(`meals-${dateString}`);
-            if (storedMeals) {
-                meals = JSON.parse(storedMeals);
+            if (typeof window !== 'undefined') {
+                const storedMeals = localStorage.getItem(`meals-${dateString}`);
+                if (storedMeals) {
+                    meals = JSON.parse(storedMeals);
+                }
             }
         } catch (error) {
             console.error("Could not parse meals from local storage for date: ", dateString, error);
@@ -80,21 +80,24 @@ function getMonthData(): WeeklyData[] {
              const dateString = formatDate(day);
             let meals: Meal[] = [];
              try {
-                const storedMeals = localStorage.getItem(`meals-${dateString}`);
-                if (storedMeals) {
-                    meals = JSON.parse(storedMeals);
-                    if (meals.length > 0) daysWithData++;
+                if (typeof window !== 'undefined') {
+                    const storedMeals = localStorage.getItem(`meals-${dateString}`);
+                    if (storedMeals) {
+                        meals = JSON.parse(storedMeals);
+                        if (meals.length > 0 && meals.some(m => m.items.length > 0)) {
+                           daysWithData++;
+                           meals.forEach(meal => {
+                                meal.items.forEach(item => {
+                                    totalCalories += item.nutrients.calories || 0;
+                                    totalProtein += item.nutrients.protein || 0;
+                                })
+                            })
+                        }
+                    }
                 }
             } catch (error) {
                  console.error("Could not parse meals from local storage for date: ", dateString, error);
             }
-
-            meals.forEach(meal => {
-                meal.items.forEach(item => {
-                    totalCalories += item.nutrients.calories || 0;
-                    totalProtein += item.nutrients.protein || 0;
-                })
-            })
         });
 
         monthData.push({
@@ -107,17 +110,22 @@ function getMonthData(): WeeklyData[] {
     return monthData;
 }
 
-
 export default function ProgressPage() {
-    const [weeklyData, setWeeklyData] = useState<DailyData[]>([]);
-    const [monthlyData, setMonthlyData] = useState<WeeklyData[]>([]);
+    const [isClient, setIsClient] = useState(false);
 
     useEffect(() => {
-        // Since this component uses localStorage, we need to make sure it only runs on the client.
-        setWeeklyData(getWeekData(new Date()));
-        setMonthlyData(getMonthData());
+        setIsClient(true);
     }, []);
 
+    const weeklyData = useMemo(() => {
+        if (!isClient) return [];
+        return getWeekDataForDate(new Date());
+    }, [isClient]);
+
+    const monthlyData = useMemo(() => {
+        if (!isClient) return [];
+        return getMonthData();
+    }, [isClient]);
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">

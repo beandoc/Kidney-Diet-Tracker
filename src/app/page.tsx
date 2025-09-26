@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, memo } from 'react';
 import type { Meal } from '@/lib/types';
 import useLocalStorage from '@/hooks/use-local-storage';
 import { Header } from '@/components/layout/header';
@@ -9,6 +9,10 @@ import { MealList } from '@/components/meals/meal-list';
 import { AddMealDialog } from '@/components/meals/add-meal-dialog';
 import { FoodSearch } from '@/components/food/food-search';
 import { getTodayDateString } from '@/lib/utils';
+
+const MemoizedHeader = memo(Header);
+const MemoizedDailySummary = memo(DailySummary);
+const MemoizedFoodSearch = memo(FoodSearch);
 
 export default function Home() {
   const [meals, setMeals] = useLocalStorage<Meal[]>(`meals-${getTodayDateString()}`, []);
@@ -19,15 +23,15 @@ export default function Home() {
   }, []);
 
   const addMeal = (meal: Meal) => {
-    setMeals([...meals, meal]);
+    setMeals(prevMeals => [...prevMeals, meal]);
   };
 
   const removeMeal = (mealId: string) => {
-    setMeals(meals.filter((meal) => meal.id !== mealId));
+    setMeals(prevMeals => prevMeals.filter((meal) => meal.id !== mealId));
   };
   
   const updateMeal = (updatedMeal: Meal) => {
-    setMeals(meals.map(meal => meal.id === updatedMeal.id ? updatedMeal : meal));
+    setMeals(prevMeals => prevMeals.map(meal => meal.id === updatedMeal.id ? updatedMeal : meal));
   }
 
   const dailyTotals = useMemo(() => {
@@ -47,14 +51,25 @@ export default function Home() {
   }, [meals]);
 
   if (!isClient) {
-    return null;
+    // Render a skeleton or loading state on the server
+    return (
+      <div className="flex flex-col min-h-screen bg-background">
+        <MemoizedHeader />
+        <main className="flex-grow container mx-auto p-4 md:p-8">
+          <div className="animate-pulse">
+            <div className="h-24 bg-muted rounded-lg"></div>
+            <div className="mt-8 h-48 bg-muted rounded-lg"></div>
+          </div>
+        </main>
+      </div>
+    );
   }
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <Header />
+      <MemoizedHeader />
       <main className="flex-grow container mx-auto p-4 md:p-8">
-        <DailySummary totals={dailyTotals} />
+        <MemoizedDailySummary totals={dailyTotals} />
 
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
@@ -67,7 +82,7 @@ export default function Home() {
             <MealList meals={meals} onRemoveMeal={removeMeal} onUpdateMeal={updateMeal} />
           </div>
           <div className="lg:col-span-1">
-             <FoodSearch />
+             <MemoizedFoodSearch />
           </div>
         </div>
       </main>

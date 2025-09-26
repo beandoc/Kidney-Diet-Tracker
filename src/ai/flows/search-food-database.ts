@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { resolveFoodName } from './resolve-food-name';
 
 const SearchFoodDatabaseInputSchema = z.object({
   foodQuery: z
@@ -46,60 +47,93 @@ const searchFoodDatabaseFlow = ai.defineFlow(
     if (!NUTRITIONIX_APP_ID || !NUTRITIONIX_APP_KEY) {
         throw new Error("Nutritionix API credentials are not configured in environment variables.");
     }
-    
-    try {
-        const response = await fetch(NUTRITIONIX_API_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-app-id': NUTRITIONIX_APP_ID,
-                'x-app-key': NUTRITIONIX_APP_KEY,
-            },
-            body: JSON.stringify({
-                query: foodQuery,
-                timezone: 'US/Eastern',
-            }),
-        });
 
-        if (!response.ok) {
-            const errorBody = await response.text();
-            console.error(`Nutritionix API error: ${response.status} ${response.statusText}`, errorBody);
-            throw new Error(`Nutritionix API request failed with status ${response.status}`);
-        }
+    const searchNutritionix = async (query: string) => {
+        try {
+            const response = await fetch(NUTRITIONIX_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-app-id': NUTRITIONIX_APP_ID,
+                    'x-app-key': NUTRITIONIX_APP_KEY,
+                },
+                body: JSON.stringify({
+                    query: query,
+                    timezone: 'US/Eastern',
+                }),
+            });
 
-        const data = await response.json();
-        
-        if (!data.foods || data.foods.length === 0) {
-            return {
+            if (!response.ok) {
+                const errorBody = await response.text();
+                console.error(`Nutritionix API error: ${response.status} ${response.statusText}`, errorBody);
+                return null;
+            }
+
+            const data = await response.json();
+            
+            if (!data.foods || data.foods.length === 0) {
+                return null;
+            }
+
+            // Sum up nutrients from all food items found
+            const totals = data.foods.reduce((acc: any, food: any) => {
+                acc.calories += food.nf_calories || 0;
+                acc.protein += food.nf_protein || 0;
+                acc.sodium += food.nf_sodium || 0;
+                acc.potassium += food.nf_potassium || 0;
+                acc.phosphorus += food.nf_phosphorus || 0;
+                return acc;
+            }, {
                 calories: 0,
                 protein: 0,
                 sodium: 0,
                 potassium: 0,
                 phosphorus: 0,
-            };
-        }
+            });
 
-        // Sum up nutrients from all food items found
-        const totals = data.foods.reduce((acc: any, food: any) => {
-            acc.calories += food.nf_calories || 0;
-            acc.protein += food.nf_protein || 0;
-            acc.sodium += food.nf_sodium || 0;
-            acc.potassium += food.nf_potassium || 0;
-            acc.phosphorus += food.nf_phosphorus || 0;
-            return acc;
-        }, {
+            return totals;
+
+        } catch (error) {
+            console.error('Error fetching data from Nutritionix API:', error);
+            throw new Error('Failed to fetch nutrient data.');
+        }
+    }
+    
+    // Step 1: Try the original query
+    let result = await searchNutritionix(foodQuery);
+
+    // Step 2: If it fails, try to resolve the name with AI and retry
+    if (!result) {
+        console.log(`Initial search for "${foodQuery}" failed. Trying to resolve food name.`);
+        try {
+            const foodNameParts = foodQuery.split(' ');
+            const quantityAndMeasure = foodNameParts.slice(0, 2).join(' ');
+            const foodName = foodNameParts.slice(2).join(' ');
+
+            if (foodName) {
+                const resolved = await resolveFoodName({ foodName: foodName });
+                if (resolved.standardName.toLowerCase() !== foodName.toLowerCase()) {
+                    const newQuery = `${quantityAndMeasure} ${resolved.standardName}`;
+                    console.log(`Retrying search with resolved name: "${newQuery}"`);
+                    result = await searchNutritionix(newQuery);
+                }
+            }
+        } catch (resolveError) {
+            console.error("Failed to resolve food name with AI", resolveError);
+        }
+    }
+    
+    // If still no result, return zeroed-out nutrients
+    if (!result) {
+        return {
             calories: 0,
             protein: 0,
             sodium: 0,
             potassium: 0,
             phosphorus: 0,
-        });
-
-        return totals;
-
-    } catch (error) {
-        console.error('Error fetching data from Nutritionix API:', error);
-        throw new Error('Failed to fetch nutrient data.');
+        };
     }
+    
+    return result;
   }
 );

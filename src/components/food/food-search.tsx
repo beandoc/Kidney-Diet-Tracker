@@ -47,6 +47,12 @@ export function FoodSearch() {
       setIsLoading(false);
     }
   };
+  
+  const getFoodNameFromQuery = (query: string) => {
+    const commonWords = ['with', 'and', 'in', 'on', 'a', 'an', 'the', 'of'];
+    const words = query.split(' ').filter(word => !commonWords.includes(word.toLowerCase()));
+    return words[0] || query;
+  }
 
   return (
     <Card className="shadow-md">
@@ -97,7 +103,7 @@ export function FoodSearch() {
             
             {foodQuery && (
               <div className="text-center mt-4">
-                <Link href={`/food/${encodeURIComponent(foodQuery.split(' ')[0].toLowerCase())}`} passHref>
+                <Link href={`/food/${encodeURIComponent(getFoodNameFromQuery(foodQuery).toLowerCase())}`} passHref>
                   <Button variant="link">View Nutritional Details for {foodQuery}</Button>
                 </Link>
               </div>

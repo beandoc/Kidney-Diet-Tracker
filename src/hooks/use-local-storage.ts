@@ -19,7 +19,7 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
     }
   }, [initialValue, key]);
 
-  const [storedValue, setStoredValue] = useState<T>(readValue);
+  const [storedValue, setStoredValue] = useState<T>(initialValue);
 
   const setValue: SetValue<T> = useCallback(
     value => {
@@ -30,8 +30,6 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
       }
 
       try {
-        // The `value` parameter can be a value or a function.
-        // When it's a function, we pass it the *current* storedValue.
         const valueToStore =
           value instanceof Function ? value(storedValue) : value;
         
@@ -39,27 +37,26 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
         
         setStoredValue(valueToStore);
 
-        // This is a custom event to notify other tabs/windows of the change.
         window.dispatchEvent(new Event('local-storage'));
       } catch (error) {
         console.warn(`Error setting localStorage key “${key}”:`, error);
       }
     },
-    [key, storedValue]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [key]
   );
-
+  
   useEffect(() => {
     setStoredValue(readValue());
-  }, [readValue]);
-  
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     const handleStorageChange = () => {
       setStoredValue(readValue());
     };
     
-    // Listen for changes from other tabs
     window.addEventListener("storage", handleStorageChange);
-    // Listen for changes from the same tab (our custom event)
     window.addEventListener("local-storage", handleStorageChange);
 
     return () => {

@@ -103,8 +103,13 @@ function FiberIcon(props: React.SVGProps<SVGSVGElement>) {
     )
 }
 
+function capitalizeFirstLetter(string: string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 export default function FoodDetailPage({ params }: { params: { foodName: string } }) {
   const foodName = decodeURIComponent(params.foodName);
+  const displayFoodName = capitalizeFirstLetter(foodName);
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
@@ -132,12 +137,12 @@ export default function FoodDetailPage({ params }: { params: { foodName: string 
           <Card className="overflow-hidden mb-4">
               <div className="relative">
                 <Image
-                    src="https://picsum.photos/seed/egg/600/400"
-                    alt="Boiled Egg"
+                    src={`https://picsum.photos/seed/${foodName}/600/400`}
+                    alt={displayFoodName}
                     width={600}
                     height={400}
                     className="w-full h-auto"
-                    data-ai-hint="boiled egg"
+                    data-ai-hint={foodName}
                 />
                 <div className="absolute top-2 right-2">
                     <Button variant="secondary" size="sm" className="rounded-full bg-black/50 text-white backdrop-blur-sm">
@@ -146,7 +151,7 @@ export default function FoodDetailPage({ params }: { params: { foodName: string 
                     </Button>
                 </div>
                 <div className="absolute bottom-4 left-4">
-                    <h1 className="text-2xl font-bold text-white" style={{textShadow: '1px 1px 3px rgba(0,0,0,0.7)'}}>Boiled Egg</h1>
+                    <h1 className="text-2xl font-bold text-white" style={{textShadow: '1px 1px 3px rgba(0,0,0,0.7)'}}>{displayFoodName}</h1>
                 </div>
               </div>
           </Card>

@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Loader2, Search } from 'lucide-react';
+import Link from 'next/link';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
@@ -21,6 +22,7 @@ export function FoodSearch() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<{ concerns: string[], isKidneyFriendly: boolean, suggestions: string } | null>(null);
   const { toast } = useToast();
+  const [foodQuery, setFoodQuery] = useState('');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -30,6 +32,7 @@ export function FoodSearch() {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     setResult(null);
+    setFoodQuery(values.query);
     try {
       const analysis = await analyzeMealForKidneyFriendliness({ mealDescription: values.query });
       setResult(analysis);
@@ -91,6 +94,14 @@ export function FoodSearch() {
             <div className={`p-3 rounded-md ${result.isKidneyFriendly ? 'bg-green-100 dark:bg-green-900/50' : 'bg-red-100 dark:bg-red-900/50'}`}>
                 <p className="font-bold">{result.isKidneyFriendly ? 'Generally Kidney-Friendly' : 'Potential Concerns'}</p>
             </div>
+            
+            {foodQuery && (
+              <div className="text-center mt-4">
+                <Link href={`/food/${encodeURIComponent(foodQuery.split(' ')[0].toLowerCase())}`} passHref>
+                  <Button variant="link">View Nutritional Details for {foodQuery}</Button>
+                </Link>
+              </div>
+            )}
 
             {result.concerns && result.concerns.length > 0 && (
                 <div>

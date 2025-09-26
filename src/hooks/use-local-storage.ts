@@ -6,21 +6,20 @@ import { useState, useEffect, useCallback } from 'react';
 type SetValue<T> = (value: T | ((val: T) => T)) => void;
 
 function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
-  const readValue = useCallback((): T => {
+  // Pass initialValue to useState so it's only used on the initial render
+  const [storedValue, setStoredValue] = useState<T>(() => {
     if (typeof window === 'undefined') {
       return initialValue;
     }
-
     try {
       const item = window.localStorage.getItem(key);
-      return item ? (JSON.parse(item) as T) : initialValue;
+      return item ? JSON.parse(item) : initialValue;
     } catch (error) {
       console.warn(`Error reading localStorage key “${key}”:`, error);
       return initialValue;
     }
-  }, [initialValue, key]);
+  });
 
-  const [storedValue, setStoredValue] = useState<T>(readValue);
 
   const setValue: SetValue<T> = useCallback(
     value => {
@@ -47,11 +46,39 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
   );
   
   useEffect(() => {
+    const readValue = (): T => {
+        if (typeof window === 'undefined') {
+          return initialValue;
+        }
+    
+        try {
+          const item = window.localStorage.getItem(key);
+          return item ? (JSON.parse(item) as T) : initialValue;
+        } catch (error) {
+          console.warn(`Error reading localStorage key “${key}”:`, error);
+          return initialValue;
+        }
+      };
+
     setStoredValue(readValue());
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [key]); // Only re-run if key changes
 
   useEffect(() => {
+     const readValue = (): T => {
+      if (typeof window === 'undefined') {
+        return initialValue;
+      }
+  
+      try {
+        const item = window.localStorage.getItem(key);
+        return item ? (JSON.parse(item) as T) : initialValue;
+      } catch (error) {
+        console.warn(`Error reading localStorage key “${key}”:`, error);
+        return initialValue;
+      }
+    };
+    
     const handleStorageChange = () => {
       setStoredValue(readValue());
     };
@@ -63,7 +90,8 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("local-storage", handleStorageChange);
     };
-  }, [readValue]);
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
 
   return [storedValue, setValue];
 }

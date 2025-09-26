@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Camera, Loader2, Plus, Utensils, X } from 'lucide-react';
+import { ArrowLeft, Camera, Loader2, Plus, Utensils, X, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -39,6 +39,7 @@ export default function FoodLensPage() {
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const [meals, setMeals] = useLocalStorage<Meal[]>(`meals-${getTodayDateString()}`, []);
@@ -84,6 +85,19 @@ export default function FoodLensPage() {
         setCapturedImage(dataUri);
         handleImageAnalysis(dataUri);
       }
+    }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUri = e.target?.result as string;
+        setCapturedImage(dataUri);
+        handleImageAnalysis(dataUri);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -163,6 +177,9 @@ export default function FoodLensPage() {
     setIdentifiedItems([]);
     setIsProcessing(false);
     setMealName('');
+    if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+    }
   }
   
   const removeItem = (index: number) => {
@@ -184,6 +201,7 @@ export default function FoodLensPage() {
 
       <main className="flex-grow p-4 md:p-6 flex flex-col items-center">
         <canvas ref={canvasRef} className="hidden" />
+        <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileSelect} className="hidden" />
 
         {!capturedImage ? (
             <Card className="w-full max-w-2xl overflow-hidden">
@@ -260,13 +278,19 @@ export default function FoodLensPage() {
       <footer className="sticky bottom-0 bg-background border-t p-4">
         <div className="max-w-2xl mx-auto flex gap-4">
             {!capturedImage ? (
-                <Button size="lg" className="w-full" onClick={capturePhoto} disabled={!hasCameraPermission}>
-                    <Camera className="mr-2" />
-                    Snap Meal
-                </Button>
+                <>
+                    <Button size="lg" className="w-full" onClick={capturePhoto} disabled={!hasCameraPermission}>
+                        <Camera className="mr-2" />
+                        Snap Meal
+                    </Button>
+                     <Button size="lg" variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()}>
+                        <Upload className="mr-2" />
+                        Upload
+                    </Button>
+                </>
             ) : (
                 <>
-                <Button size="lg" variant="outline" className="w-full" onClick={resetState}>Retake</Button>
+                <Button size="lg" variant="outline" className="w-full" onClick={resetState}>Retake or Upload</Button>
                 <Button size="lg" className="w-full" onClick={() => setIsDialogOpen(true)} disabled={identifiedItems.length === 0 || isProcessing}>
                     {isProcessing ? <Loader2 className="animate-spin" /> : <Plus />}
                     Log as Meal

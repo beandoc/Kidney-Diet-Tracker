@@ -23,6 +23,7 @@ import { useToast } from '@/hooks/use-toast';
 import { getFoodNutrients } from '@/app/actions';
 import type { FoodItem, Meal, Nutrient } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
+import { FREQUENTLY_TRACKED_FOODS } from '@/lib/food-database';
 
 interface AddMealDialogProps {
   onAddMeal: (meal: Meal) => void;
@@ -108,6 +109,14 @@ export function AddMealDialog({ onAddMeal }: AddMealDialogProps) {
     setFoodItems([]);
   };
 
+  const addFrequentFood = (food: Omit<FoodItem, 'id'>) => {
+    const newFoodItem: FoodItem = {
+      ...food,
+      id: crypto.randomUUID(),
+    };
+    setFoodItems([...foodItems, newFoodItem]);
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -145,14 +154,14 @@ export function AddMealDialog({ onAddMeal }: AddMealDialogProps) {
             <Form {...foodForm}>
                 <form onSubmit={foodForm.handleSubmit(handleAddFood)} className="flex items-start gap-2">
                     <FormField control={foodForm.control} name="foodName" render={({ field }) => (
-                        <FormItem className="flex-grow"><FormControl><Input placeholder="e.g., Banana" {...field} /></FormControl></FormItem>
+                        <FormItem className="flex-grow"><FormControl><Input placeholder="Search by Food Name/Dish" {...field} /></FormControl></FormItem>
                     )} />
                      <FormField control={foodForm.control} name="quantity" render={({ field }) => (
                         <FormItem className="w-32"><FormControl><Input placeholder="e.g., 1 medium" {...field} /></FormControl></FormItem>
                     )} />
                     <Button type="submit" disabled={isSearching}>
-                        {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-                        <span className="sr-only">Add</span>
+                        {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                        <span className="sr-only">Search</span>
                     </Button>
                 </form>
             </Form>
@@ -187,6 +196,28 @@ export function AddMealDialog({ onAddMeal }: AddMealDialogProps) {
                     </Table>
                 </ScrollArea>
             )}
+
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium text-muted-foreground">Frequently Tracked Foods</h4>
+              <ScrollArea className="h-48">
+                <div className="space-y-2 pr-4">
+                  {FREQUENTLY_TRACKED_FOODS.map((food) => (
+                    <div key={food.name} className="flex items-center justify-between p-2 rounded-md border">
+                      <div>
+                        <p className="font-medium">{food.name}</p>
+                        <p className="text-sm text-muted-foreground">{food.quantity}</p>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <span className="text-sm text-muted-foreground">{food.nutrients.calories} Cal</span>
+                        <Button size="icon" variant="outline" className="h-8 w-8 rounded-full" onClick={() => addFrequentFood(food)}>
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
         </div>
 
 

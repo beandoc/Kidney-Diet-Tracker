@@ -2,20 +2,29 @@
 'use client';
 
 import { useState, useEffect, useMemo, memo } from 'react';
+import dynamic from 'next/dynamic';
 import type { Meal } from '@/lib/types';
 import useLocalStorage from '@/hooks/use-local-storage';
 import { Header } from '@/components/layout/header';
 import { DailySummary } from '@/components/dashboard/daily-summary';
 import { MealList } from '@/components/meals/meal-list';
 import { AddMealDialog } from '@/components/meals/add-meal-dialog';
-import { FoodSearch } from '@/components/food/food-search';
 import { getTodayDateString } from '@/lib/utils';
-import { FoodSuggestions } from '@/components/food/food-suggestions';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const MemoizedHeader = memo(Header);
 const MemoizedDailySummary = memo(DailySummary);
-const MemoizedFoodSearch = memo(FoodSearch);
-const MemoizedFoodSuggestions = memo(FoodSuggestions);
+
+const DynamicFoodSearch = dynamic(() => import('@/components/food/food-search').then(mod => mod.FoodSearch), {
+  loading: () => <Skeleton className="h-64" />,
+  ssr: false,
+});
+
+const DynamicFoodSuggestions = dynamic(() => import('@/components/food/food-suggestions').then(mod => mod.FoodSuggestions), {
+  loading: () => <Skeleton className="h-80" />,
+  ssr: false,
+});
+
 
 export default function Home() {
   const [meals, setMeals] = useLocalStorage<Meal[]>(`meals-${getTodayDateString()}`, []);
@@ -85,8 +94,8 @@ export default function Home() {
             <MealList meals={meals} onRemoveMeal={removeMeal} onUpdateMeal={updateMeal} />
           </div>
           <div className="lg:col-span-1 space-y-8">
-             <MemoizedFoodSearch />
-             <MemoizedFoodSuggestions />
+             <DynamicFoodSearch />
+             <DynamicFoodSuggestions />
           </div>
         </div>
       </main>

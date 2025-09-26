@@ -53,9 +53,9 @@ const settingsGroups = [
     items: [
       {
         icon: Camera,
-        title: 'Snap Gallery',
-        description: 'View your snapped images',
-        href: '/gallery',
+        title: 'Food Lens',
+        description: 'Use your camera to identify and log meals',
+        href: '/snap',
       },
     ],
   },

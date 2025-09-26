@@ -13,10 +13,10 @@ export function Header() {
             </h1>
         </div>
         <div className="flex items-center gap-2">
-            <Link href="/gallery" passHref>
+            <Link href="/snap" passHref>
                 <Button variant="outline">
                     <Camera className="mr-2 h-4 w-4" />
-                    Snap Gallery
+                    Food Lens
                 </Button>
             </Link>
              <Link href="/settings" passHref>

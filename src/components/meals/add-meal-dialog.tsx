@@ -35,8 +35,9 @@ interface AddMealDialogProps {
 }
 
 const foodSearchSchema = z.object({
-  foodName: z.string().min(1, 'Food name is required.'),
-  quantity: z.string().min(1, 'Quantity is required.'),
+  foodName: z.string().min(2, 'Food name is required.'),
+  quantity: z.string().min(1, 'Qty is required.'),
+  measure: z.string().min(1, 'Measure is required.')
 });
 
 const defaultMealSettings: MealSetting[] = [
@@ -60,28 +61,29 @@ export function AddMealDialog({ onAddMeal }: AddMealDialogProps) {
 
   const foodForm = useForm<z.infer<typeof foodSearchSchema>>({
     resolver: zodResolver(foodSearchSchema),
-    defaultValues: { foodName: '', quantity: '' },
+    defaultValues: { foodName: '', quantity: '1', measure: 'serving' },
   });
 
   const handleAddFood = async (values: z.infer<typeof foodSearchSchema>) => {
     setIsSearching(true);
+    const fullQuery = `${values.quantity} ${values.measure} ${values.foodName}`;
     try {
-      const nutrients = await getFoodNutrients(values.foodName, values.quantity);
+      const nutrients = await getFoodNutrients(values.foodName, `${values.quantity} ${values.measure}`);
       if (Object.values(nutrients).every(v => v === 0)) {
          toast({
             variant: "destructive",
             title: "Could not find food",
-            description: `We couldn't find nutrient data for "${values.foodName}". Please try a different name or be more specific.`,
+            description: `We couldn't find data for "${fullQuery}". Try being more specific, e.g., "1 cup pasta" or "100g pasta".`,
           });
       } else {
         const newFoodItem: FoodItem = {
             id: crypto.randomUUID(),
             name: values.foodName,
-            quantity: values.quantity,
+            quantity: `${values.quantity} ${values.measure}`,
             nutrients,
         };
         setFoodItems([...foodItems, newFoodItem]);
-        foodForm.reset();
+        foodForm.reset({ foodName: '', quantity: '1', measure: foodForm.getValues('measure')});
       }
     } catch (error) {
       toast({
@@ -169,10 +171,13 @@ export function AddMealDialog({ onAddMeal }: AddMealDialogProps) {
                     <Form {...foodForm}>
                         <form onSubmit={foodForm.handleSubmit(handleAddFood)} className="flex items-start gap-2">
                             <FormField control={foodForm.control} name="foodName" render={({ field }) => (
-                                <FormItem className="flex-grow"><FormControl><Input placeholder="Search by Food Name/Dish" {...field} /></FormControl></FormItem>
+                                <FormItem className="flex-grow"><FormControl><Input placeholder="Food name (e.g., Pasta)" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
-                            <FormField control={foodForm.control} name="quantity" render={({ field }) => (
-                                <FormItem className="w-32"><FormControl><Input placeholder="e.g., 1 medium" {...field} /></FormControl></FormItem>
+                             <FormField control={foodForm.control} name="quantity" render={({ field }) => (
+                                <FormItem className="w-20"><FormControl><Input placeholder="Qty" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={foodForm.control} name="measure" render={({ field }) => (
+                                <FormItem className="w-32"><FormControl><Input placeholder="Measure" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
                             <Button type="submit" disabled={isSearching}>
                                 {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}

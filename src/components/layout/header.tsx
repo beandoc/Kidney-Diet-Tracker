@@ -1,3 +1,4 @@
+
 import { Leaf, Camera, Settings, LineChart } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -9,22 +10,22 @@ export function Header() {
         <div className="flex items-center gap-2">
             <Link href="/" className="flex items-center gap-2">
                 <Leaf className="text-primary-foreground h-6 w-6" />
-                <h1 className="text-xl font-bold font-headline text-primary-foreground">
+                <h1 className="text-lg md:text-xl font-bold font-headline text-primary-foreground">
                 Kidney Diet Tracker
                 </h1>
             </Link>
         </div>
         <div className="flex items-center gap-2">
              <Link href="/progress" passHref>
-                <Button variant="outline">
-                    <LineChart className="mr-2 h-4 w-4" />
-                    View Progress
+                <Button variant="outline" size="sm">
+                    <LineChart className="h-4 w-4 md:mr-2" />
+                    <span className="hidden md:inline">View Progress</span>
                 </Button>
             </Link>
             <Link href="/snap" passHref>
-                <Button variant="outline">
-                    <Camera className="mr-2 h-4 w-4" />
-                    Food Lens
+                <Button variant="outline" size="sm">
+                    <Camera className="h-4 w-4 md:mr-2" />
+                     <span className="hidden md:inline">Food Lens</span>
                 </Button>
             </Link>
              <Link href="/settings" passHref>

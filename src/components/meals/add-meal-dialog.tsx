@@ -169,20 +169,22 @@ export function AddMealDialog({ onAddMeal }: AddMealDialogProps) {
                 <div className="space-y-4">
                     <h3 className="text-sm font-medium">Add Food Items</h3>
                     <Form {...foodForm}>
-                        <form onSubmit={foodForm.handleSubmit(handleAddFood)} className="flex items-start gap-2">
+                        <form onSubmit={foodForm.handleSubmit(handleAddFood)} className="flex flex-col sm:flex-row items-start gap-2">
                             <FormField control={foodForm.control} name="foodName" render={({ field }) => (
-                                <FormItem className="flex-grow"><FormControl><Input placeholder="Food name (e.g., Pasta)" {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem className="w-full sm:flex-grow"><FormControl><Input placeholder="Food name (e.g., Pasta)" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
-                             <FormField control={foodForm.control} name="quantity" render={({ field }) => (
-                                <FormItem className="w-20"><FormControl><Input placeholder="Qty" {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
-                            <FormField control={foodForm.control} name="measure" render={({ field }) => (
-                                <FormItem className="w-32"><FormControl><Input placeholder="Measure" {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
-                            <Button type="submit" disabled={isSearching}>
-                                {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-                                <span className="sr-only">Search</span>
-                            </Button>
+                            <div className="flex w-full sm:w-auto gap-2">
+                                <FormField control={foodForm.control} name="quantity" render={({ field }) => (
+                                    <FormItem className="flex-1"><FormControl><Input placeholder="Qty" {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <FormField control={foodForm.control} name="measure" render={({ field }) => (
+                                    <FormItem className="flex-1"><FormControl><Input placeholder="Measure" {...field} /></FormControl><FormMessage /></FormItem>
+                                )} />
+                                <Button type="submit" disabled={isSearching} className="self-end">
+                                    {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                                    <span className="sr-only">Search</span>
+                                </Button>
+                            </div>
                         </form>
                     </Form>
 

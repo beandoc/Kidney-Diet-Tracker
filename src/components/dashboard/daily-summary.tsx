@@ -26,7 +26,7 @@ export function DailySummary({ totals }: DailySummaryProps) {
         <CardTitle className="font-headline">Daily Summary</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-4 gap-y-6">
           {(Object.keys(totals) as Nutrient[]).map((nutrient) => {
             const Icon = NUTRIENT_ICONS[nutrient];
             const value = Math.round(totals[nutrient]);
@@ -39,11 +39,11 @@ export function DailySummary({ totals }: DailySummaryProps) {
                   <Icon className="h-5 w-5 text-primary-foreground" />
                   <span>{NUTRIENT_LABELS[nutrient]}</span>
                 </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold text-foreground">
+                <div className="flex items-baseline gap-1 md:gap-2 flex-wrap">
+                  <span className="text-xl md:text-2xl font-bold text-foreground">
                     {value.toLocaleString()}
                   </span>
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-xs md:text-sm text-muted-foreground">
                     / {goal.toLocaleString()} {NUTRIENT_UNITS[nutrient]}
                   </span>
                 </div>

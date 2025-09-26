@@ -1,3 +1,4 @@
+
 import type { Meal, Nutrient } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -37,16 +38,16 @@ export function MealCard({ meal, onRemoveMeal, onUpdateMeal }: MealCardProps) {
           <CardTitle className="font-headline">{meal.name}</CardTitle>
           <CardDescription>{meal.items.length} item(s)</CardDescription>
         </div>
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onRemoveMeal(meal.id)}>
+        <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 -mt-2" onClick={() => onRemoveMeal(meal.id)}>
           <Trash2 className="h-4 w-4" />
           <span className="sr-only">Remove Meal</span>
         </Button>
       </CardHeader>
-      <CardContent>
-        <Table>
+      <CardContent className="overflow-x-auto">
+        <Table className="min-w-[600px] md:min-w-full">
           <TableHeader>
             <TableRow>
-              <TableHead>Food Item</TableHead>
+              <TableHead className="w-[30%]">Food Item</TableHead>
               <TableHead className="text-right">Calories</TableHead>
               <TableHead className="text-right">Protein</TableHead>
               <TableHead className="text-right">Sodium</TableHead>
@@ -58,7 +59,7 @@ export function MealCard({ meal, onRemoveMeal, onUpdateMeal }: MealCardProps) {
           <TableBody>
             {meal.items.map((item) => (
               <TableRow key={item.id}>
-                <TableCell className="font-medium">{item.name} <span className="text-muted-foreground">({item.quantity})</span></TableCell>
+                <TableCell className="font-medium">{item.name} <span className="text-muted-foreground text-xs">({item.quantity})</span></TableCell>
                 <TableCell className="text-right">{Math.round(item.nutrients.calories)}</TableCell>
                 <TableCell className="text-right">{Math.round(item.nutrients.protein)}g</TableCell>
                 <TableCell className="text-right">{Math.round(item.nutrients.sodium)}mg</TableCell>
@@ -75,7 +76,7 @@ export function MealCard({ meal, onRemoveMeal, onUpdateMeal }: MealCardProps) {
           </TableBody>
         </Table>
       </CardContent>
-      <CardFooter className="bg-muted/50 p-4 flex flex-wrap gap-x-4 gap-y-2 text-sm justify-end">
+      <CardFooter className="bg-muted/50 p-4 flex flex-col md:flex-row md:flex-wrap gap-x-4 gap-y-2 text-sm justify-end">
         <strong className="mr-auto">Meal Totals:</strong>
         {(Object.keys(mealTotals) as Nutrient[]).map(nutrient => (
           <div key={nutrient}>

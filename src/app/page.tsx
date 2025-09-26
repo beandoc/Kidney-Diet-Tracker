@@ -79,24 +79,24 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <MemoizedHeader />
-      <main className="flex-grow container mx-auto p-4 md:p-8">
+      <main className="flex-grow container mx-auto p-4">
         <MemoizedDailySummary totals={dailyTotals} />
 
         <div className="mt-8">
           <div>
-            <div className="flex justify-between items-center mb-4">
-              <div className='flex items-center gap-4'>
-                <h2 className="text-2xl font-bold font-headline text-foreground">
-                  Meals for {format(currentDate, 'MMMM d, yyyy')}
+            <div className="flex flex-col md:flex-row justify-between md:items-center mb-4 gap-4">
+              <div className='flex items-center gap-2 md:gap-4'>
+                <h2 className="text-xl md:text-2xl font-bold font-headline text-foreground">
+                  Meals for {format(currentDate, 'MMM d, yyyy')}
                 </h2>
-                 <div className="flex items-center gap-2">
+                 <div className="flex items-center gap-1 md:gap-2">
                     <Button variant="outline" size="icon" onClick={() => handleDateChange('prev')}>
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
                     <Button variant="outline" size="icon" onClick={() => handleDateChange('next')}>
                       <ChevronRight className="h-4 w-4" />
                     </Button>
-                    {!isToday && <Button variant="outline" onClick={() => handleDateChange('today')}>Today</Button>}
+                    {!isToday && <Button variant="outline" size="sm" onClick={() => handleDateChange('today')}>Today</Button>}
                 </div>
               </div>
               <AddMealDialog onAddMeal={addMeal} />

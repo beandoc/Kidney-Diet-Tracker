@@ -8,7 +8,10 @@ import { Header } from '@/components/layout/header';
 import { DailySummary } from '@/components/dashboard/daily-summary';
 import { MealList } from '@/components/meals/meal-list';
 import { AddMealDialog } from '@/components/meals/add-meal-dialog';
-import { getTodayDateString } from '@/lib/utils';
+import { formatDate, getTodayDateString } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { addDays, subDays, format } from 'date-fns';
 
 const MemoizedHeader = memo(Header);
 const MemoizedDailySummary = memo(DailySummary);
@@ -16,7 +19,10 @@ const MemoizedMealList = memo(MealList);
 
 
 export default function Home() {
-  const [meals, setMeals] = useLocalStorage<Meal[]>(`meals-${getTodayDateString()}`, []);
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const dateString = useMemo(() => formatDate(currentDate), [currentDate]);
+
+  const [meals, setMeals] = useLocalStorage<Meal[]>(`meals-${dateString}`, []);
 
   const addMeal = (meal: Meal) => {
     setMeals(prevMeals => {
@@ -59,6 +65,16 @@ export default function Home() {
     );
   }, [meals]);
 
+  const handleDateChange = (direction: 'prev' | 'next' | 'today') => {
+    if (direction === 'today') {
+      setCurrentDate(new Date());
+    } else {
+      const newDate = direction === 'prev' ? subDays(currentDate, 1) : addDays(currentDate, 1);
+      setCurrentDate(newDate);
+    }
+  };
+
+  const isToday = useMemo(() => getTodayDateString() === dateString, [dateString]);
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -69,9 +85,20 @@ export default function Home() {
         <div className="mt-8">
           <div>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold font-headline text-foreground">
-                Today&apos;s Meals
-              </h2>
+              <div className='flex items-center gap-4'>
+                <h2 className="text-2xl font-bold font-headline text-foreground">
+                  Meals for {format(currentDate, 'MMMM d, yyyy')}
+                </h2>
+                 <div className="flex items-center gap-2">
+                    <Button variant="outline" size="icon" onClick={() => handleDateChange('prev')}>
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="icon" onClick={() => handleDateChange('next')}>
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                    {!isToday && <Button variant="outline" onClick={() => handleDateChange('today')}>Today</Button>}
+                </div>
+              </div>
               <AddMealDialog onAddMeal={addMeal} />
             </div>
             <MemoizedMealList meals={meals} onRemoveMeal={removeMeal} onUpdateMeal={updateMeal} />

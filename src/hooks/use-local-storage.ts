@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -30,18 +31,15 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
       }
 
       try {
-        setStoredValue(prevStoredValue => {
-          const newValue =
-            value instanceof Function ? value(prevStoredValue) : value;
-          window.localStorage.setItem(key, JSON.stringify(newValue));
-          window.dispatchEvent(new Event('local-storage'));
-          return newValue;
-        });
+        const newValue = value instanceof Function ? value(storedValue) : value;
+        window.localStorage.setItem(key, JSON.stringify(newValue));
+        setStoredValue(newValue);
+        window.dispatchEvent(new Event('local-storage'));
       } catch (error) {
         console.warn(`Error setting localStorage key “${key}”:`, error);
       }
     },
-    [key]
+    [key, storedValue]
   );
 
   useEffect(() => {

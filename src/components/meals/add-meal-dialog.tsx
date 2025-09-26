@@ -21,7 +21,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { getFoodNutrients } from '@/app/actions';
-import type { FoodItem, Meal, Nutrient } from '@/lib/types';
+import type { FoodItem, Meal } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { FREQUENTLY_TRACKED_FOODS } from '@/lib/food-database';
 
@@ -125,103 +125,102 @@ export function AddMealDialog({ onAddMeal }: AddMealDialogProps) {
           Add Meal
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[625px]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[625px] grid-rows-[auto_minmax(0,1fr)_auto] p-0 max-h-[90vh]">
+        <DialogHeader className="p-6 pb-0">
           <DialogTitle>Add a New Meal</DialogTitle>
           <DialogDescription>Log a meal by adding food items and their quantities.</DialogDescription>
         </DialogHeader>
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="mealName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Meal Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Breakfast, Lunch..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </form>
-        </Form>
         
-        <div className="space-y-4">
-            <h3 className="text-sm font-medium">Add Food Items</h3>
-            <Form {...foodForm}>
-                <form onSubmit={foodForm.handleSubmit(handleAddFood)} className="flex items-start gap-2">
-                    <FormField control={foodForm.control} name="foodName" render={({ field }) => (
-                        <FormItem className="flex-grow"><FormControl><Input placeholder="Search by Food Name/Dish" {...field} /></FormControl></FormItem>
-                    )} />
-                     <FormField control={foodForm.control} name="quantity" render={({ field }) => (
-                        <FormItem className="w-32"><FormControl><Input placeholder="e.g., 1 medium" {...field} /></FormControl></FormItem>
-                    )} />
-                    <Button type="submit" disabled={isSearching}>
-                        {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-                        <span className="sr-only">Search</span>
-                    </Button>
+        <ScrollArea className="h-full overflow-y-auto">
+            <div className="space-y-4 px-6 py-4">
+                <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <FormField
+                    control={form.control}
+                    name="mealName"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Meal Name</FormLabel>
+                        <FormControl>
+                            <Input placeholder="e.g., Breakfast, Lunch..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
                 </form>
-            </Form>
+                </Form>
+                
+                <div className="space-y-4">
+                    <h3 className="text-sm font-medium">Add Food Items</h3>
+                    <Form {...foodForm}>
+                        <form onSubmit={foodForm.handleSubmit(handleAddFood)} className="flex items-start gap-2">
+                            <FormField control={foodForm.control} name="foodName" render={({ field }) => (
+                                <FormItem className="flex-grow"><FormControl><Input placeholder="Search by Food Name/Dish" {...field} /></FormControl></FormItem>
+                            )} />
+                            <FormField control={foodForm.control} name="quantity" render={({ field }) => (
+                                <FormItem className="w-32"><FormControl><Input placeholder="e.g., 1 medium" {...field} /></FormControl></FormItem>
+                            )} />
+                            <Button type="submit" disabled={isSearching}>
+                                {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                                <span className="sr-only">Search</span>
+                            </Button>
+                        </form>
+                    </Form>
 
-            {foodItems.length > 0 && (
-                <ScrollArea className="h-40 w-full rounded-md border">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Item</TableHead>
-                                <TableHead className="text-right">Cals</TableHead>
-                                <TableHead className="text-right">Prot.</TableHead>
-                                <TableHead className="text-right">...</TableHead>
-                                <TableHead className="w-[10px]"></TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                        {foodItems.map(item => (
-                            <TableRow key={item.id}>
-                                <TableCell className="font-medium">{item.name}</TableCell>
-                                <TableCell className="text-right">{Math.round(item.nutrients.calories)}</TableCell>
-                                <TableCell className="text-right">{Math.round(item.nutrients.protein)}g</TableCell>
-                                <TableCell className="text-right">...</TableCell>
-                                <TableCell>
-                                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveFood(item.id)}>
-                                        <X className="h-3 w-3" />
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
+                    {foodItems.length > 0 && (
+                        <div className="rounded-md border">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Item</TableHead>
+                                        <TableHead className="text-right">Cals</TableHead>
+                                        <TableHead className="text-right">Prot.</TableHead>
+                                        <TableHead className="w-[10px]"></TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                {foodItems.map(item => (
+                                    <TableRow key={item.id}>
+                                        <TableCell className="font-medium">{item.name}</TableCell>
+                                        <TableCell className="text-right">{Math.round(item.nutrients.calories)}</TableCell>
+                                        <TableCell className="text-right">{Math.round(item.nutrients.protein)}g</TableCell>
+                                        <TableCell>
+                                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleRemoveFood(item.id)}>
+                                                <X className="h-3 w-3" />
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    )}
+
+                    <div className="space-y-2">
+                    <h4 className="text-sm font-medium text-muted-foreground">Frequently Tracked Foods</h4>
+                    <div className="space-y-2">
+                        {FREQUENTLY_TRACKED_FOODS.map((food) => (
+                            <div key={food.name} className="flex items-center justify-between p-2 rounded-md border">
+                            <div>
+                                <p className="font-medium">{food.name}</p>
+                                <p className="text-sm text-muted-foreground">{food.quantity}</p>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <span className="text-sm text-muted-foreground">{food.nutrients.calories} Cal</span>
+                                <Button size="icon" variant="outline" className="h-8 w-8 rounded-full" onClick={() => addFrequentFood(food)}>
+                                <Plus className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            </div>
                         ))}
-                        </TableBody>
-                    </Table>
-                </ScrollArea>
-            )}
-
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium text-muted-foreground">Frequently Tracked Foods</h4>
-              <ScrollArea className="h-48">
-                <div className="space-y-2 pr-4">
-                  {FREQUENTLY_TRACKED_FOODS.map((food) => (
-                    <div key={food.name} className="flex items-center justify-between p-2 rounded-md border">
-                      <div>
-                        <p className="font-medium">{food.name}</p>
-                        <p className="text-sm text-muted-foreground">{food.quantity}</p>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <span className="text-sm text-muted-foreground">{food.nutrients.calories} Cal</span>
-                        <Button size="icon" variant="outline" className="h-8 w-8 rounded-full" onClick={() => addFrequentFood(food)}>
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
                     </div>
-                  ))}
+                    </div>
                 </div>
-              </ScrollArea>
             </div>
-        </div>
+        </ScrollArea>
 
-
-        <DialogFooter>
+        <DialogFooter className="p-6 pt-0">
           <Button type="button" onClick={form.handleSubmit(onSubmit)}>
             <Utensils className="mr-2 h-4 w-4" />
             Save Meal

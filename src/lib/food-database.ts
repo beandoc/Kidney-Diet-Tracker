@@ -6,19 +6,9 @@ import type { FoodItem } from './types';
 
 export const FREQUENTLY_TRACKED_FOODS: Omit<FoodItem, 'id'>[] = [
   {
-    name: 'Tea',
-    quantity: '1.0 teacup',
-    nutrients: { calories: 73, protein: 0, sodium: 0, potassium: 0, phosphorus: 0 },
-  },
-  {
-    name: 'Boiled Egg',
-    quantity: '2.0 large',
-    nutrients: { calories: 155, protein: 13, sodium: 124, potassium: 126, phosphorus: 172 },
-  },
-  {
-    name: 'Banana',
-    quantity: '1.0 small (4.5" long)',
-    nutrients: { calories: 55, protein: 0.7, sodium: 1, potassium: 225, phosphorus: 14 },
+    name: 'Rice',
+    quantity: '1.0 katori',
+    nutrients: { calories: 120, protein: 2.5, sodium: 5, potassium: 30, phosphorus: 40 },
   },
   {
     name: 'Roti',
@@ -26,33 +16,48 @@ export const FREQUENTLY_TRACKED_FOODS: Omit<FoodItem, 'id'>[] = [
     nutrients: { calories: 85, protein: 3, sodium: 180, potassium: 110, phosphorus: 90 },
   },
   {
-    name: 'Almond',
-    quantity: '5.0 almond',
-    nutrients: { calories: 37, protein: 1.5, sodium: 0, potassium: 50, phosphorus: 34 },
+    name: 'Curd',
+    quantity: '1.0 katori',
+    nutrients: { calories: 90, protein: 5, sodium: 50, potassium: 200, phosphorus: 150 },
   },
   {
-    name: 'Milk',
+    name: 'Dal',
+    quantity: '1.5 katori',
+    nutrients: { calories: 173, protein: 9, sodium: 300, potassium: 400, phosphorus: 200 },
+  },
+  {
+    name: 'Cucumber',
+    quantity: '1.0 large (8-1/4" long)',
+    nutrients: { calories: 42, protein: 2, sodium: 6, potassium: 440, phosphorus: 70 },
+  },
+  {
+    name: 'Boiled Egg',
+    quantity: '2.0 large',
+    nutrients: { calories: 155, protein: 13, sodium: 124, potassium: 126, phosphorus: 172 },
+  },
+  {
+    name: 'Sambar',
+    quantity: '1.5 katori',
+    nutrients: { calories: 170, protein: 8, sodium: 500, potassium: 350, phosphorus: 150 },
+  },
+  {
+    name: 'Salad',
+    quantity: '1.0 katori',
+    nutrients: { calories: 36, protein: 1, sodium: 15, potassium: 200, phosphorus: 50 },
+  },
+  {
+    name: 'Chicken Curry',
+    quantity: '1.0 katori',
+    nutrients: { calories: 160, protein: 15, sodium: 400, potassium: 300, phosphorus: 180 },
+  },
+  {
+    name: 'Buttermilk',
     quantity: '1.0 glass',
-    nutrients: { calories: 168, protein: 8, sodium: 100, potassium: 380, phosphorus: 250 },
+    nutrients: { calories: 45, protein: 2, sodium: 250, potassium: 150, phosphorus: 100 },
   },
   {
-    name: 'Idli',
-    quantity: '2.0 idli (regular)',
-    nutrients: { calories: 146, protein: 4, sodium: 300, potassium: 90, phosphorus: 70 },
-  },
-  {
-    name: 'Apple',
-    quantity: '1.0 small (2-3/4" dia)',
-    nutrients: { calories: 88, protein: 0.5, sodium: 2, potassium: 195, phosphorus: 20 },
-  },
-  {
-    name: 'Walnut',
-    quantity: '2.0 piece (half of one)',
-    nutrients: { calories: 28, protein: 0.6, sodium: 0, potassium: 19, phosphorus: 15 },
-  },
-  {
-    name: 'Dosa',
-    quantity: '1.5 medium',
-    nutrients: { calories: 221, protein: 6, sodium: 450, potassium: 150, phosphorus: 120 },
-  },
+    name: 'Dal Fry',
+    quantity: '1.0 katori',
+    nutrients: { calories: 128, protein: 7, sodium: 350, potassium: 300, phosphorus: 180 },
+  }
 ];

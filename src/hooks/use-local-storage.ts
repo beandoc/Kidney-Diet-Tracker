@@ -29,6 +29,7 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
     }
 
     try {
+      // Allow value to be a function so we have the same API as useState
       const newValue = value instanceof Function ? value(storedValue) : value;
       window.localStorage.setItem(key, JSON.stringify(newValue));
       setStoredValue(newValue);

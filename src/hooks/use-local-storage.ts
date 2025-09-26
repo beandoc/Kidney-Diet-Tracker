@@ -6,19 +6,19 @@ import { useState, useEffect, useCallback } from 'react';
 type SetValue<T> = (value: T | ((val: T) => T)) => void;
 
 function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
-  // Pass initialValue to useState so it's only used on the initial render
-  const [storedValue, setStoredValue] = useState<T>(() => {
-    if (typeof window === 'undefined') {
-      return initialValue;
-    }
+  const [storedValue, setStoredValue] = useState<T>(initialValue);
+
+  // This effect will only run on the client, after the component has mounted.
+  // This is the correct place to read from localStorage.
+  useEffect(() => {
     try {
       const item = window.localStorage.getItem(key);
-      return item ? JSON.parse(item) : initialValue;
+      setStoredValue(item ? JSON.parse(item) : initialValue);
     } catch (error) {
       console.warn(`Error reading localStorage key “${key}”:`, error);
-      return initialValue;
+      setStoredValue(initialValue);
     }
-  });
+  }, [key, initialValue]);
 
 
   const setValue: SetValue<T> = useCallback(
@@ -59,25 +59,6 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
           return initialValue;
         }
       };
-
-    setStoredValue(readValue());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]); // Only re-run if key changes
-
-  useEffect(() => {
-     const readValue = (): T => {
-      if (typeof window === 'undefined') {
-        return initialValue;
-      }
-  
-      try {
-        const item = window.localStorage.getItem(key);
-        return item ? (JSON.parse(item) as T) : initialValue;
-      } catch (error) {
-        console.warn(`Error reading localStorage key “${key}”:`, error);
-        return initialValue;
-      }
-    };
     
     const handleStorageChange = () => {
       setStoredValue(readValue());

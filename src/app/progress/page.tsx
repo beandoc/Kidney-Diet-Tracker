@@ -6,7 +6,6 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { subDays, format, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns';
 import { formatDate } from '@/lib/utils';
 import type { Meal } from '@/lib/types';
@@ -182,19 +181,14 @@ export default function ProgressPage() {
                     <CardTitle>This Week's Summary</CardTitle>
                     <CardDescription>Daily calorie and protein intake for the current week.</CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={weeklyData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="date" />
-                            <YAxis yAxisId="left" orientation="left" stroke="hsl(var(--primary))" />
-                            <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--chart-2))" />
-                            <Tooltip />
-                            <Legend />
-                            <Bar yAxisId="left" dataKey="calories" fill="hsl(var(--primary))" name="Calories (kcal)" />
-                            <Bar yAxisId="right" dataKey="protein" fill="hsl(var(--chart-2))" name="Protein (g)" />
-                        </BarChart>
-                    </ResponsiveContainer>
+                <CardContent className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                    {weeklyData.map((day) => (
+                        <Card key={day.date} className="p-4 flex flex-col items-center justify-center">
+                            <p className="font-bold text-lg">{day.date}</p>
+                            <p className="text-sm text-muted-foreground">{day.calories} Cal</p>
+                            <p className="text-sm text-muted-foreground">{day.protein}g Prot.</p>
+                        </Card>
+                    ))}
                 </CardContent>
             </Card>
              <Card>
@@ -202,19 +196,14 @@ export default function ProgressPage() {
                     <CardTitle>Last 4 Weeks Summary</CardTitle>
                     <CardDescription>Average daily calorie and protein intake per week.</CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={monthlyData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="week" />
-                            <YAxis yAxisId="left" orientation="left" stroke="hsl(var(--primary))" />
-                            <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--chart-2))" />
-                            <Tooltip />
-                            <Legend />
-                            <Bar yAxisId="left" dataKey="calories" fill="hsl(var(--primary))" name="Avg Calories (kcal)" />
-                            <Bar yAxisId="right" dataKey="protein" fill="hsl(var(--chart-2))" name="Avg Protein (g)" />
-                        </BarChart>
-                    </ResponsiveContainer>
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                     {monthlyData.map((week) => (
+                        <Card key={week.week} className="p-4">
+                            <p className="font-bold">{week.week}</p>
+                            <p className="text-sm text-muted-foreground">Avg. Calories: {week.calories} Cal</p>
+                            <p className="text-sm text-muted-foreground">Avg. Protein: {week.protein}g</p>
+                        </Card>
+                    ))}
                 </CardContent>
             </Card>
         </div>

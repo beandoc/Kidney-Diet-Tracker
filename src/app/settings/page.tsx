@@ -41,12 +41,6 @@ const settingsGroups = [
         description: 'Breakfast • Morning Snack • Lunch • Evening Snack • Dinner',
         href: '/edit-meals',
       },
-      {
-        icon: Flame,
-        title: 'Edit Meal Calories',
-        description: 'Edit calorie budget for each meal',
-        href: '#',
-      },
     ],
   },
   {
@@ -120,3 +114,5 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+    

@@ -3,7 +3,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, ExternalLink, AlertTriangle, Info, Plus, Utensils } from 'lucide-react';
+import { ArrowLeft, Info, Plus, Utensils } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -18,18 +18,6 @@ import useLocalStorage from '@/hooks/use-local-storage';
 import { getTodayDateString } from '@/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
-
-function RecipeIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
-      <polyline points="14 2 14 8 20 8"></polyline>
-      <path d="M12 18h.01"></path>
-      <path d="M16 18h.01"></path>
-      <path d="M8 18h.01"></path>
-    </svg>
-  );
-}
 
 function ProteinsIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
@@ -233,12 +221,6 @@ export default function FoodDetailPage({ params }: { params: { foodName: string 
             </Link>
         </div>
         <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon">
-                <ExternalLink className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon">
-                <AlertTriangle className="h-5 w-5" />
-            </Button>
         </div>
       </header>
 
@@ -254,12 +236,6 @@ export default function FoodDetailPage({ params }: { params: { foodName: string 
                     className="w-full h-auto"
                     data-ai-hint={foodName}
                 />
-                <div className="absolute top-2 right-2">
-                    <Button variant="secondary" size="sm" className="rounded-full bg-black/50 text-white backdrop-blur-sm">
-                        <RecipeIcon className="h-4 w-4 mr-2" />
-                        Recipe
-                    </Button>
-                </div>
                 <div className="absolute bottom-4 left-4">
                     <h1 className="text-2xl font-bold text-white" style={{textShadow: '1px 1px 3px rgba(0,0,0,0.7)'}}>{displayFoodName}</h1>
                 </div>
@@ -329,23 +305,23 @@ export default function FoodDetailPage({ params }: { params: { foodName: string 
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <FatsIcon className="h-5 w-5 text-muted-foreground"/>
-                            <span>Fats</span>
+                            <span>Sodium</span>
                         </div>
-                         {renderNutrientValue('phosphorus')}
+                         {renderNutrientValue('sodium')}
                     </div>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <CarbsIcon className="h-5 w-5 text-muted-foreground"/>
-                            <span>Carbs</span>
+                            <span>Potassium</span>
                         </div>
                         {renderNutrientValue('potassium')}
                     </div>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <FiberIcon className="h-5 w-5 text-muted-foreground"/>
-                            <span>Fiber</span>
+                            <span>Phosphorus</span>
                         </div>
-                        <span className="font-medium">N/A</span>
+                        {renderNutrientValue('phosphorus')}
                     </div>
                 </div>
             </CardContent>
@@ -397,6 +373,8 @@ export default function FoodDetailPage({ params }: { params: { foodName: string 
     </div>
   );
 }
+
+    
 
     
 

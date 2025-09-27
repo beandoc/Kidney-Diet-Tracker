@@ -14,14 +14,14 @@ import {z} from 'genkit';
 const ResolveFoodNameInputSchema = z.object({
   foodName: z
     .string()
-    .describe('A food name that may be regional, colloquial, or in a different language (e.g., "chapati", "besan", "paneer").'),
+    .describe('A food name that may be regional, colloquial, or in a different language (e.g., "chapati", "besan", "paneer", "milk").'),
 });
 export type ResolveFoodNameInput = z.infer<typeof ResolveFoodNameInputSchema>;
 
 const ResolveFoodNameOutputSchema = z.object({
   standardName: z
     .string()
-    .describe('The most common, standard English name for the food item, suitable for a US-based nutrition database (e.g., "Roti", "Chickpea Flour", "Cottage Cheese").'),
+    .describe('The most common, standard English name for the food item, suitable for a US-based nutrition database (e.g., "Roti", "Chickpea Flour", "Indian Cottage Cheese", "Cow\'s milk").'),
 });
 export type ResolveFoodNameOutput = z.infer<typeof ResolveFoodNameOutputSchema>;
 
@@ -39,6 +39,7 @@ const prompt = ai.definePrompt({
   prompt: `You are an expert in world cuisines and food terminology. Your task is to resolve a given food name into its most common, standard English equivalent that would be understood by a US-based nutrition database like Nutritionix.
 
 - If the food is Indian, provide the most common English name or the most widely used term.
+- If the food name is ambiguous (e.g., "milk"), provide a more specific, common version (e.g., "Cow's milk").
 - If the food name is already in standard English, return it as is.
 - Focus only on the name of the food, not its quantity or preparation method.
 
@@ -49,6 +50,7 @@ Examples:
 - "Brinjal" -> "Eggplant"
 - "Dosa" -> "Dosa" (as it's a common name)
 - "Apple" -> "Apple"
+- "Milk" -> "Cow's milk"
 
 Food name to resolve: {{{foodName}}}`,
 });

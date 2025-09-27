@@ -14,12 +14,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { addDays, subDays, format } from 'date-fns';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
-
-const FoodSuggestions = dynamic(() => import('@/components/food/food-suggestions').then(mod => mod.FoodSuggestions), {
-  ssr: false,
-  loading: () => <Skeleton className="h-[300px]" />,
-});
-
+import { MealAlternatives } from '@/components/food/meal-alternatives';
 
 const MemoizedHeader = memo(Header);
 const MemoizedDailySummary = memo(DailySummary);
@@ -115,7 +110,7 @@ export default function Home() {
             </div>
           </div>
           <aside className="space-y-8 lg:col-span-1">
-             <FoodSuggestions />
+             <MealAlternatives meals={meals} />
           </aside>
         </div>
       </main>

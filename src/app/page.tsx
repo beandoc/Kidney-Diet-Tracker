@@ -79,7 +79,7 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <MemoizedHeader />
-      <main className="flex-grow container mx-auto p-4">
+      <div className="flex-grow container mx-auto p-4">
         <MemoizedDailySummary totals={dailyTotals} />
 
         <div className="mt-8">
@@ -104,7 +104,7 @@ export default function Home() {
             <MemoizedMealList meals={meals} onRemoveMeal={removeMeal} onUpdateMeal={updateMeal} />
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

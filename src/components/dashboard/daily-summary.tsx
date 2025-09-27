@@ -12,12 +12,13 @@ interface DailySummaryProps {
 }
 
 export function DailySummary({ totals }: DailySummaryProps) {
-  const [calorieBudget] = useLocalStorage('calorieBudget', DEFAULT_GOALS.calories);
+  const [customGoals] = useLocalStorage<Partial<Record<Nutrient, number>>>('nutrient-goals', {});
   
-  const dynamicGoals = {
-      ...DEFAULT_GOALS,
-      calories: calorieBudget || DEFAULT_GOALS.calories,
-  }
+  const goals = {
+    ...DEFAULT_GOALS,
+    ...customGoals,
+  };
+
 
   return (
     <Card className="shadow-md">
@@ -29,7 +30,7 @@ export function DailySummary({ totals }: DailySummaryProps) {
           {(Object.keys(totals) as Nutrient[]).map((nutrient) => {
             const Icon = NUTRIENT_ICONS[nutrient];
             const value = Math.round(totals[nutrient]);
-            const goal = dynamicGoals[nutrient];
+            const goal = goals[nutrient];
             const progress = goal > 0 ? (value / goal) * 100 : 0;
 
             return (

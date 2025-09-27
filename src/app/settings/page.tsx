@@ -1,9 +1,10 @@
+
 'use client';
 
 import {
   ArrowLeft,
   ChevronRight,
-  UtensilsCrossed,
+  Target,
   Share2,
   Soup,
   Flame,
@@ -18,16 +19,16 @@ const settingsGroups = [
     title: 'Calories & Nutrition Settings',
     items: [
       {
-        icon: UtensilsCrossed,
-        title: 'Daily Calorie Budget',
-        description: '2300 Cal',
-        href: '/calorie-information',
+        icon: Target,
+        title: 'Nutrient Goals',
+        description: 'Set your daily calorie and nutrient targets',
+        href: '/nutrient-goals',
       },
       {
         icon: Share2,
         title: 'Macronutrient Budget',
         description: 'Protein: 115g • Fats: 76g • Carbs: 287g • Fibre: 30g',
-        href: '/calorie-information',
+        href: '/macro-breakdown',
       },
     ],
   },

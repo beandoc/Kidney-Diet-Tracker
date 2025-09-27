@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import useLocalStorage from '@/hooks/use-local-storage';
-import { ArrowLeft, Lock, Info, Wheat, Beef, Pencil } from 'lucide-react';
+import { ArrowLeft, Lock, Info, Wheat, Beef } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -13,8 +13,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 import Link from 'next/link';
+import type { Nutrient } from '@/lib/types';
+import { DAILY_GOALS } from '@/lib/constants';
 
 function BreadIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
@@ -60,35 +61,19 @@ const dietPlans = {
 };
 
 export default function MacroBreakdownPage() {
-  const [calorieBudget, setCalorieBudget] = useLocalStorage('calorieBudget', 2300);
+  const [customGoals] = useLocalStorage<Partial<Record<Nutrient, number>>>('nutrient-goals', {});
+  const calorieBudget = customGoals.calories || DAILY_GOALS.calories;
+  
   const [dietPlan, setDietPlan] = useLocalStorage<'balanced' | 'low-carb' | 'high-protein'>('dietPlan', 'balanced');
-  const [isEditingBudget, setIsEditingBudget] = useState(false);
-  const [tempBudget, setTempBudget] = useState(calorieBudget);
 
   const macronutrients = useMemo(() => {
     const plan = dietPlans[dietPlan];
-    const budget = calorieBudget || 2300;
     return {
-        protein: Math.round((budget * (plan.protein / 100)) / 4),
-        carbs: Math.round((budget * (plan.carbs / 100)) / 4),
-        fat: Math.round((budget * (plan.fat / 100)) / 9),
+        protein: Math.round((calorieBudget * (plan.protein / 100)) / 4),
+        carbs: Math.round((calorieBudget * (plan.carbs / 100)) / 4),
+        fat: Math.round((calorieBudget * (plan.fat / 100)) / 9),
     };
   }, [calorieBudget, dietPlan]);
-
-  const handleBudgetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value, 10);
-    setTempBudget(isNaN(value) ? 0 : value);
-  };
-
-  const saveBudget = () => {
-    setCalorieBudget(tempBudget);
-    setIsEditingBudget(false);
-  };
-  
-  useEffect(() => {
-    setTempBudget(calorieBudget || 2300);
-  }, [calorieBudget]);
-
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
@@ -111,31 +96,24 @@ export default function MacroBreakdownPage() {
               <div className="flex items-center justify-between">
                 <span className="text-lg">Calorie Budget</span>
                 <div className="flex items-center gap-2">
-                    {isEditingBudget ? (
-                        <Input type="number" value={tempBudget} onChange={handleBudgetChange} className="w-28 text-right" onBlur={saveBudget} autoFocus/>
-                    ) : (
-                        <span className="text-2xl font-bold">{calorieBudget || 2300}</span>
-                    )}
-                    <Button variant="ghost" size="icon" onClick={() => setIsEditingBudget(!isEditingBudget)}>
-                        <Pencil className="h-4 w-4 text-muted-foreground" />
-                    </Button>
+                    <span className="text-2xl font-bold">{calorieBudget}</span>
                 </div>
               </div>
               <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
                 <Info className="h-4 w-4" />
-                <span>This budget is based on your Nutrient Goals</span>
+                <span>Your daily calorie budget is set in Nutrient Goals.</span>
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>Macronutrient Budget</CardTitle>
+              <CardTitle>Macronutrient Split</CardTitle>
             </CardHeader>
             <CardContent>
               <Select value={dietPlan} onValueChange={(value: 'balanced' | 'low-carb' | 'high-protein') => setDietPlan(value)}>
                 <SelectTrigger className="w-full mb-6">
-                  <SelectValue placeholder="Select a diet" />
+                  <SelectValue placeholder="Select a diet plan" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="balanced">Balanced Diet</SelectItem>

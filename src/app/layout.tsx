@@ -4,8 +4,6 @@ import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from "@/components/ui/toaster"
 import { PT_Sans } from 'next/font/google';
-import { SidebarProvider } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/layout/app-sidebar';
 
 export const metadata: Metadata = {
   title: 'Kidney Diet Tracker',
@@ -26,14 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={cn('font-body antialiased', ptSans.variable)}>
-        <SidebarProvider>
-          <div className="flex min-h-screen">
-            <AppSidebar />
-            <main className="flex-1">
-              {children}
-            </main>
-          </div>
-        </SidebarProvider>
+        {children}
         <Toaster />
       </body>
     </html>

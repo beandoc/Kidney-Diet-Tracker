@@ -26,7 +26,7 @@ import { getFoodNutrients } from '@/app/actions';
 import type { FoodItem, Meal } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { LOCAL_FOOD_DATABASE } from '@/lib/food-database';
-import { MealSetting } from '@/app/edit-meals/page';
+import type { MealSetting } from '@/app/edit-meals/page';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
 
@@ -258,3 +258,5 @@ export function AddMealDialog({ onAddMeal }: AddMealDialogProps) {
     </Dialog>
   );
 }
+
+    

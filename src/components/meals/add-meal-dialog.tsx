@@ -40,6 +40,9 @@ const foodSearchSchema = z.object({
   measure: z.string().min(1, 'Measure is required.')
 });
 
+// Define a type alias for the inferred schema
+type FoodSearchFormValues = z.infer<typeof foodSearchSchema>;
+
 const defaultMealSettings: MealSetting[] = [
     { name: 'Breakfast', time: '09:30 AM', enabled: true },
     { name: 'Morning Snack', time: '11:00 AM', enabled: true },
@@ -62,12 +65,12 @@ export function AddMealDialog({ onAddMeal }: AddMealDialogProps) {
   const [favoriteFoods] = useLocalStorage<string[]>('favorite-foods', []);
   const favoriteFoodItems = LOCAL_FOOD_DATABASE.filter(food => favoriteFoods.includes(food.name));
 
-  const foodForm = useForm<z.infer<typeof foodSearchSchema>>({
+  const foodForm = useForm<FoodSearchFormValues>({
     resolver: zodResolver(foodSearchSchema),
     defaultValues: { foodName: '', quantity: '1', measure: 'serving' },
   });
 
-  const handleAddFood = async (values: z.infer<typeof foodSearchSchema>>) => {
+  const handleAddFood = async (values: FoodSearchFormValues) => {
     setIsSearching(true);
     const fullQuery = `${values.quantity} ${values.measure} ${values.foodName}`;
     try {

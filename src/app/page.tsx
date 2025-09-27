@@ -15,11 +15,6 @@ import { addDays, subDays, format } from 'date-fns';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const FoodSearch = dynamic(() => import('@/components/food/food-search').then(mod => mod.FoodSearch), {
-  ssr: false,
-  loading: () => <Skeleton className="h-[300px]" />,
-});
-
 const FoodSuggestions = dynamic(() => import('@/components/food/food-suggestions').then(mod => mod.FoodSuggestions), {
   ssr: false,
   loading: () => <Skeleton className="h-[300px]" />,
@@ -120,7 +115,6 @@ export default function Home() {
             </div>
           </div>
           <aside className="space-y-8 lg:col-span-1">
-             <FoodSearch />
              <FoodSuggestions />
           </aside>
         </div>

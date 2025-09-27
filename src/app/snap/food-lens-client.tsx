@@ -15,7 +15,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { identifyFoodFromPhoto } from '@/ai/flows/identify-food-from-photo';
+import { analyzeFoodPhoto } from './actions';
 import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { getFoodNutrients } from '@/app/actions';
@@ -105,7 +105,7 @@ export default function FoodLensClient() {
     setIsProcessing(true);
     setIdentifiedItems([]);
     try {
-      const result = await identifyFoodFromPhoto({ photoDataUri: imageUri });
+      const result = await analyzeFoodPhoto({ photoDataUri: imageUri });
       if (result.foodItems.length === 0) {
         toast({
             variant: 'default',
@@ -324,3 +324,5 @@ export default function FoodLensClient() {
     </div>
   );
 }
+
+    

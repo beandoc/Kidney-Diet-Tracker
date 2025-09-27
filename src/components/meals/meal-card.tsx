@@ -1,10 +1,22 @@
 
+import { useState } from 'react';
 import type { Meal, Nutrient } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Trash2, X } from 'lucide-react';
 import { NUTRIENT_LABELS, NUTRIENT_UNITS } from '@/lib/constants';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+
 
 interface MealCardProps {
   meal: Meal;
@@ -13,6 +25,8 @@ interface MealCardProps {
 }
 
 export function MealCard({ meal, onRemoveMeal, onUpdateMeal }: MealCardProps) {
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  
   const mealTotals = meal.items.reduce(
     (totals, item) => {
       (Object.keys(item.nutrients) as Nutrient[]).forEach((nutrient) => {
@@ -30,15 +44,21 @@ export function MealCard({ meal, onRemoveMeal, onUpdateMeal }: MealCardProps) {
     };
     onUpdateMeal(updatedMeal);
   };
+  
+  const confirmRemoveMeal = () => {
+    onRemoveMeal(meal.id);
+    setIsAlertOpen(false);
+  }
 
   return (
+    <>
     <Card className="shadow-md transition-all hover:shadow-lg">
       <CardHeader className="flex flex-row items-start justify-between">
         <div>
           <CardTitle className="font-headline">{meal.name}</CardTitle>
           <CardDescription>{meal.items.length} item(s)</CardDescription>
         </div>
-        <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 -mt-2" onClick={() => onRemoveMeal(meal.id)}>
+        <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 -mt-2" onClick={() => setIsAlertOpen(true)}>
           <Trash2 className="h-4 w-4" />
           <span className="sr-only">Remove Meal</span>
         </Button>
@@ -86,5 +106,22 @@ export function MealCard({ meal, onRemoveMeal, onUpdateMeal }: MealCardProps) {
         ))}
       </CardFooter>
     </Card>
+
+    <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the
+                <strong>{meal.name}</strong> meal and all of its items.
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmRemoveMeal}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

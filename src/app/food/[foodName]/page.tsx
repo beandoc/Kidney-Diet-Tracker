@@ -377,5 +377,3 @@ export default function FoodDetailPage({ params }: { params: { foodName: string 
     
 
     
-
-    

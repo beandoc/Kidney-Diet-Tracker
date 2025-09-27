@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Plus, Search, Loader2, X, Utensils } from 'lucide-react';
+import { Plus, Search, Loader2, X, Utensils, Heart } from 'lucide-react';
 import useLocalStorage from '@/hooks/use-local-storage';
 
 import { Button } from '@/components/ui/button';
@@ -25,7 +25,7 @@ import { useToast } from '@/hooks/use-toast';
 import { getFoodNutrients } from '@/app/actions';
 import type { FoodItem, Meal } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
-import { FREQUENTLY_TRACKED_FOODS } from '@/lib/food-database';
+import { LOCAL_FOOD_DATABASE } from '@/lib/food-database';
 import { MealSetting } from '@/app/edit-meals/page';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
@@ -58,13 +58,16 @@ export function AddMealDialog({ onAddMeal }: AddMealDialogProps) {
   const [mealSettings] = useLocalStorage<MealSetting[]>('mealSettings', defaultMealSettings);
   const [otherMeals] = useLocalStorage<string[]>('otherMeals', []);
   const availableMeals = [...mealSettings.filter(m => m.enabled).map(m => m.name), ...otherMeals];
+  
+  const [favoriteFoods] = useLocalStorage<string[]>('favorite-foods', []);
+  const favoriteFoodItems = LOCAL_FOOD_DATABASE.filter(food => favoriteFoods.includes(food.name));
 
   const foodForm = useForm<z.infer<typeof foodSearchSchema>>({
     resolver: zodResolver(foodSearchSchema),
     defaultValues: { foodName: '', quantity: '1', measure: 'serving' },
   });
 
-  const handleAddFood = async (values: z.infer<typeof foodSearchSchema>) => {
+  const handleAddFood = async (values: z.infer<typeof foodSearchSchema>>) => {
     setIsSearching(true);
     const fullQuery = `${values.quantity} ${values.measure} ${values.foodName}`;
     try {
@@ -128,7 +131,7 @@ export function AddMealDialog({ onAddMeal }: AddMealDialogProps) {
     setFoodItems([]);
   };
 
-  const addFrequentFood = (food: Omit<FoodItem, 'id'>) => {
+  const addLocalFood = (food: Omit<FoodItem, 'id'>) => {
     const newFoodItem: FoodItem = {
       ...food,
       id: crypto.randomUUID(),
@@ -151,7 +154,7 @@ export function AddMealDialog({ onAddMeal }: AddMealDialogProps) {
         </DialogHeader>
         
         <ScrollArea className="h-full overflow-y-auto">
-            <div className="space-y-4 px-6 py-4">
+            <div className="space-y-6 px-6 py-4">
                 <div className="space-y-2">
                     <FormLabel>Meal Name</FormLabel>
                      <Select onValueChange={setSelectedMealName} value={selectedMealName}>
@@ -217,25 +220,30 @@ export function AddMealDialog({ onAddMeal }: AddMealDialogProps) {
                         </div>
                     )}
 
-                    <div className="space-y-2">
-                    <h4 className="text-sm font-medium text-muted-foreground">Frequently Tracked Foods</h4>
-                    <div className="space-y-2">
-                        {FREQUENTLY_TRACKED_FOODS.map((food) => (
-                            <div key={food.name} className="flex items-center justify-between p-2 rounded-md border">
-                            <div>
-                                <p className="font-medium">{food.name}</p>
-                                <p className="text-sm text-muted-foreground">{food.quantity}</p>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <span className="text-sm text-muted-foreground">{food.nutrients.calories} Cal</span>
-                                <Button size="icon" variant="outline" className="h-8 w-8 rounded-full" onClick={() => addFrequentFood(food)}>
-                                <Plus className="h-4 w-4" />
-                                </Button>
-                            </div>
-                            </div>
-                        ))}
-                    </div>
-                    </div>
+                    {favoriteFoodItems.length > 0 && (
+                      <div className="space-y-2">
+                        <h4 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                          <Heart className="h-4 w-4 text-red-500 fill-current" />
+                          Your Favorite Foods
+                        </h4>
+                        <div className="space-y-2">
+                            {favoriteFoodItems.map((food) => (
+                                <div key={food.name} className="flex items-center justify-between p-2 rounded-md border">
+                                <div>
+                                    <p className="font-medium">{food.name}</p>
+                                    <p className="text-sm text-muted-foreground">{food.quantity}</p>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <span className="text-sm text-muted-foreground">{food.nutrients.calories} Cal</span>
+                                    <Button size="icon" variant="outline" className="h-8 w-8 rounded-full" onClick={() => addLocalFood(food)}>
+                                      <Plus className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                                </div>
+                            ))}
+                        </div>
+                      </div>
+                    )}
                 </div>
             </div>
         </ScrollArea>

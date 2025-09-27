@@ -66,8 +66,8 @@ const settingsGroups = [
       {
         icon: Heart,
         title: 'Favorite Foods',
-        description: 'Add favourite foods to your diet plan',
-        href: '#',
+        description: 'Manage and quickly log your favorite foods',
+        href: '/favorite-foods',
       },
     ],
   },

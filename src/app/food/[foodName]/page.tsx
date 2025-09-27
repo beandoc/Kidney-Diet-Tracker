@@ -45,8 +45,13 @@ function ProteinsIcon(props: React.SVGProps<SVGSVGElement>) {
             strokeLinecap="round"
             strokeLinejoin="round"
         >
-            <path d="M12.22 2h-4.44l-2 10-2-10H2l2 10-2 10h4.44l2-10 2 10h1.78l2-10-2-10Z" />
-            <path d="M22 22h-4.44l-2-10-2 10H12l2-10-2-10h4.44l2 10 2-10h1.78l-2 10 2 10Z" />
+           <path d="M8.4 1.5A3.9 3.9 0 0 0 4.5 5.4a3.9 3.9 0 0 0 3.9 3.9h0a3.9 3.9 0 0 0 3.9-3.9A3.9 3.9 0 0 0 8.4 1.5Z" />
+           <path d="M15.6 1.5a3.9 3.9 0 0 0-3.9 3.9 3.9 3.9 0 0 0 3.9 3.9h0a3.9 3.9 0 0 0 3.9-3.9A3.9 3.9 0 0 0 15.6 1.5Z" />
+            <path d="M8.4 22.5a3.9 3.9 0 0 0-3.9-3.9 3.9 3.9 0 0 0-3.9 3.9h0a3.9 3.9 0 0 0 3.9 3.9 3.9 3.9 0 0 0 3.9-3.9Z" />
+            <path d="m4.5 18.6 3.9-10.2" />
+            <path d="M12.3 8.4 8.4 18.6" />
+            <path d="M15.6 22.5a3.9 3.9 0 0 0 3.9-3.9 3.9 3.9 0 0 0-3.9-3.9h0a3.9 3.9 0 0 0-3.9 3.9 3.9 3.9 0 0 0 3.9 3.9Z" />
+            <path d="m19.5 18.6-3.9-10.2" />
         </svg>
     )
 }
@@ -86,8 +91,14 @@ function CarbsIcon(props: React.SVGProps<SVGSVGElement>) {
             strokeLinecap="round"
             strokeLinejoin="round"
         >
-            <path d="M20 12H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2z" />
-            <path d="M20 12c0-4.42-3.58-8-8-8S4 7.58 4 12" />
+            <path d="M20.4 10.2c.1-.5.2-1 .2-1.5C20.6 4.4 16.7 1 12 1S3.4 4.4 3.4 8.7c0 .5.1 1 .2 1.5" />
+            <path d="M4.3 12c.1.5.2 1 .2 1.5C4.5 17.6 7.9 21 12 21s7.5-3.4 7.5-7.5c0-.5-.1-1-.2-1.5" />
+            <path d="M12 15a3 3 0 0 0 3-3c0-.5-.1-1-.2-1.5" />
+            <path d="M12 9a3 3 0 0 1-3 3c0 .5.1 1 .2 1.5" />
+            <path d="m12 12-4.5 4.5" />
+            <path d="m12 12 4.5 4.5" />
+            <path d="m12 12-4.5-4.5" />
+            <path d="m12 12 4.5-4.5" />
         </svg>
     )
 }
@@ -287,6 +298,7 @@ export default function FoodDetailPage({ params }: { params: { foodName: string 
                     <SelectItem value="piece">piece</SelectItem>
                     <SelectItem value="slice">slice</SelectItem>
                     <SelectItem value="cup">cup</SelectItem>
+                    <SelectItem value="teacup">teacup</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -302,6 +314,9 @@ export default function FoodDetailPage({ params }: { params: { foodName: string 
                         <p className="text-sm text-muted-foreground">Calories</p>
                         {isLoading || !nutrients ? <Skeleton className="h-8 w-24 mt-1" /> : <p className="text-3xl font-bold">{Math.round(nutrients.calories)} Cal</p> }
                     </div>
+                     <div className="bg-muted px-3 py-1.5 rounded-md text-sm text-muted-foreground">
+                        Net wt: 180.0 ml
+                    </div>
                 </div>
                 <div className="space-y-3">
                     <div className="flex items-center justify-between">
@@ -316,14 +331,14 @@ export default function FoodDetailPage({ params }: { params: { foodName: string 
                             <FatsIcon className="h-5 w-5 text-muted-foreground"/>
                             <span>Fats</span>
                         </div>
-                         {isLoading || !nutrients ? <Skeleton className="h-5 w-16" /> : <span className="font-medium">{Math.round(nutrients.phosphorus)} g</span>}
+                         {renderNutrientValue('phosphorus')}
                     </div>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <CarbsIcon className="h-5 w-5 text-muted-foreground"/>
                             <span>Carbs</span>
                         </div>
-                        {isLoading || !nutrients ? <Skeleton className="h-5 w-16" /> : <span className="font-medium">{Math.round(nutrients.potassium)} g</span>}
+                        {renderNutrientValue('potassium')}
                     </div>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -348,7 +363,7 @@ export default function FoodDetailPage({ params }: { params: { foodName: string 
       <footer className="sticky bottom-0 p-4 bg-background border-t">
         <div className="max-w-md mx-auto">
             <Button size="lg" className="w-full" onClick={() => setIsDialogOpen(true)} disabled={isLoading || !nutrients}>
-                <Plus className="mr-2" /> Add to Meal
+                ADD
             </Button>
         </div>
       </footer>
@@ -382,5 +397,7 @@ export default function FoodDetailPage({ params }: { params: { foodName: string 
     </div>
   );
 }
+
+    
 
     

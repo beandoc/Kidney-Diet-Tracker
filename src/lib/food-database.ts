@@ -2,6 +2,7 @@ import type { FoodItem } from './types';
 import { fruitsAndVeggies } from './data/fruits-and-veggies';
 import { indianCuisine } from './data/indian-cuisine';
 import { nutsAndSeeds } from './data/nuts-and-seeds';
+import { dairyAndEggs } from './data/dairy-and-eggs';
 
 // This file serves as a central point to combine all local food databases.
 // The `LOCAL_FOOD_DATABASE` is an aggregation of all food items from the /data directory.
@@ -9,7 +10,8 @@ import { nutsAndSeeds } from './data/nuts-and-seeds';
 export const LOCAL_FOOD_DATABASE: Omit<FoodItem, 'id'>[] = [
   ...indianCuisine,
   ...fruitsAndVeggies,
-  ...nutsAndSeeds
+  ...nutsAndSeeds,
+  ...dairyAndEggs,
 ];
 
 // This list contains only the foods that are frequently tracked.
@@ -31,5 +33,15 @@ export const FREQUENTLY_TRACKED_FOODS: Omit<FoodItem, 'id'>[] = [
     name: 'Boiled Egg',
     quantity: '1 large',
     nutrients: { calories: 78, protein: 6.3, sodium: 62, potassium: 63, phosphorus: 86 },
+  },
+   {
+    name: 'Milk (Cow)',
+    quantity: '100g',
+    nutrients: { calories: 61, protein: 3.15, sodium: 43, potassium: 132, phosphorus: 84 },
+  },
+  {
+    name: 'Butter',
+    quantity: '100g',
+    nutrients: { calories: 717, protein: 0.85, sodium: 11, potassium: 24, phosphorus: 24 },
   },
 ];

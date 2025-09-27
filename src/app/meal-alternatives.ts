@@ -2,7 +2,7 @@
 'use server';
 
 import { LOCAL_FOOD_DATABASE } from '@/lib/food-database';
-import type { FoodItem } from '@/lib/types';
+import type { FoodItem, Nutrient } from '@/lib/types';
 import { dairyAndEggs } from '@/lib/data/dairy-and-eggs';
 import { fruitsAndVeggies } from '@/lib/data/fruits-and-veggies';
 import { indianCuisine } from '@/lib/data/indian-cuisine';
@@ -26,7 +26,9 @@ function getFoodCategory(foodItem: FoodItem | Omit<FoodItem, 'id'>): string | nu
 }
 
 export async function getMealAlternatives(
-  currentItems: FoodItem[]
+  currentItems: FoodItem[],
+  dailyTotals: Record<Nutrient, number>,
+  dailyGoals: Record<Nutrient, number>
 ): Promise<{ original: FoodItem; alternative: Omit<FoodItem, 'id'> }[]> {
   const alternatives: { original: FoodItem; alternative: Omit<FoodItem, 'id'> }[] = [];
   if (currentItems.length === 0) {
@@ -41,7 +43,7 @@ export async function getMealAlternatives(
 
     const originalCategory = getFoodCategory(item);
     
-    // Find an alternative from a *different* category with similar calorie and protein content
+    // Find an alternative from a *different* category
     const potentialAlternatives = LOCAL_FOOD_DATABASE.filter(alt => {
       if (usedAlternativeNames.has(alt.name) || alt.name === item.name) return false;
       
@@ -54,7 +56,28 @@ export async function getMealAlternatives(
       const proteinDiff = Math.abs(alt.nutrients.protein - item.nutrients.protein);
       
       // Looser criteria: within 50 calories and 5g of protein
-      return calorieDiff <= 50 && proteinDiff <= 5;
+      if (calorieDiff > 50 || proteinDiff > 5) {
+          return false;
+      }
+      
+      // Safety Check: Ensure the swap doesn't exceed micronutrient goals
+      const criticalNutrients: Nutrient[] = ['sodium', 'potassium', 'phosphorus'];
+      for (const nutrient of criticalNutrients) {
+          const originalValue = item.nutrients[nutrient] || 0;
+          const alternativeValue = alt.nutrients[nutrient] || 0;
+          const currentTotal = dailyTotals[nutrient] || 0;
+          const goal = dailyGoals[nutrient];
+          
+          // Calculate the hypothetical new total after the swap
+          const newTotal = currentTotal - originalValue + alternativeValue;
+
+          if (newTotal > goal) {
+              // This alternative would push the user over their limit for this nutrient.
+              return false;
+          }
+      }
+
+      return true;
     });
 
     if (potentialAlternatives.length > 0) {

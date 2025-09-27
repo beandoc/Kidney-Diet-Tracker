@@ -110,7 +110,7 @@ export default function Home() {
             </div>
           </div>
           <aside className="space-y-8 lg:col-span-1">
-             <MealAlternatives meals={meals} />
+             <MealAlternatives meals={meals} dailyTotals={dailyTotals} />
           </aside>
         </div>
       </main>

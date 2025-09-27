@@ -6,8 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Lightbulb, RefreshCw, ArrowRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getMealAlternatives } from '@/app/meal-alternatives';
-import type { FoodItem, Meal } from '@/lib/types';
+import type { FoodItem, Meal, Nutrient } from '@/lib/types';
 import Link from 'next/link';
+import useLocalStorage from '@/hooks/use-local-storage';
+import { DAILY_GOALS as DEFAULT_GOALS } from '@/lib/constants';
 
 type MealAlternative = {
   original: FoodItem;
@@ -16,24 +18,32 @@ type MealAlternative = {
 
 interface MealAlternativesProps {
     meals: Meal[];
+    dailyTotals: Record<Nutrient, number>;
 }
 
-export function MealAlternatives({ meals }: MealAlternativesProps) {
+export function MealAlternatives({ meals, dailyTotals }: MealAlternativesProps) {
   const [alternatives, setAlternatives] = useState<MealAlternative[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [customGoals] = useLocalStorage<Partial<Record<Nutrient, number>>>('nutrient-goals', {});
+  
+  const goals = {
+    ...DEFAULT_GOALS,
+    ...customGoals,
+  };
+
 
   useEffect(() => {
     const allItems = meals.flatMap(meal => meal.items);
     if (allItems.length > 0) {
       setIsLoading(true);
-      getMealAlternatives(allItems)
+      getMealAlternatives(allItems, dailyTotals, goals)
         .then(setAlternatives)
         .finally(() => setIsLoading(false));
     } else {
         setAlternatives([]);
         setIsLoading(false);
     }
-  }, [meals]);
+  }, [meals, dailyTotals, customGoals]);
 
   return (
     <Card className="shadow-md">
